@@ -76,9 +76,8 @@ class DatasetManager:
     def get_datasets_by_dataset_id(dataset_ids):
         # print("get_datasets_by_dataset_id was called :", dataset_ids)
         datasets = []
-        for dataset_id in dataset_ids:
-            # TODO: Replace the hardcoded path with a dynamic path
-            dataset_folder = f"C:/Users/bogda/Desktop/The Lab/fan-analytic-chatbot/Chatbot/datasets/{dataset_id}"
+        for dataset_id in dataset_ids: 
+            dataset_folder = f"./Chatbot/datasets/{dataset_id}"
             if os.path.exists(dataset_folder):
                 for root, dirs, files in os.walk(dataset_folder):
                     for file in files:
