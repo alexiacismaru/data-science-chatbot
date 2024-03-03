@@ -37,7 +37,7 @@ class OpenAIClient:
                         "when translating them and make sure the values and column names in dutch are used correctly."},
             {"role": "system",
              "content": "When calling a function make sure you provide all the needed arguments and that you retain "
-                        "their outputs"}, 
+                        "their outputs"},
             {"role": "system",
              "content": "Guide users in selecting the right type of data visualization based on their data and the insights "
                         ", in case they specifically ask for it. Different visualizations serve different purposes, such as identifying trends, comparing groups, "
@@ -49,7 +49,7 @@ class OpenAIClient:
              "content": "Provide functionalities for displaying datasets directly to users, enabling them to view and interact "
                         "with their data in real-time. This includes presenting data tables, summaries, and basic visualizations "
                         "to give users an immediate sense of their dataset's structure and content."
-            }
+             }
         ]
 
         self.custom_functions = [
@@ -108,9 +108,9 @@ class OpenAIClient:
                         }
                     }
                 }
-            }, 
+            },
             {
-                'name': 'plot_data', 
+                'name': 'plot_data',
                 'description': 'Plot a dataset or a dataframe with a specific type of plot. You need to pass the dataset id and the plot type.',
                 'parameters': {
                     'type': 'object',
@@ -118,7 +118,7 @@ class OpenAIClient:
                         'dataset_id': {
                             'type': 'string',
                             'description': 'The id of the dataset you want to plot.'
-                        }, 
+                        },
                         'plot_type': {
                             'type': 'string',
                             'description': 'The type of plot you want to use. Supported types are: bar, line, scatter, hist, box, pie.'
@@ -138,11 +138,11 @@ class OpenAIClient:
         )
         if response.choices[0].message.function_call:
             function_name = response.choices[0].message.function_call.name
-            # print("function call: ", function_name)
+            print("function call: ", function_name)
             if function_name == 'get_dataset_descriptions':
 
                 dataset_catalogue = DatasetManager.get_dataset_descriptions()
-
+                print(dataset_catalogue)
                 result = process_dataframe_with_natural_language(dataset_catalogue, "This is a dataset catalogue of "
                                                                                     "all the available datasets, it "
                                                                                     "holds 2 columns 'id' and "
@@ -161,7 +161,7 @@ class OpenAIClient:
                                                                                         "the user through the process."
                                       })
                 response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4-turbo-preview",
                     messages=self.messages
                 )
                 content = response.choices[0].message.content
@@ -179,10 +179,15 @@ class OpenAIClient:
                                                                                     "for, look through them and pic "
                                                                                     "the ones that are best suited "
                                                                                     "based on the user query. The "
-                                                                                    "dataset holds 2 columns 'id' and "
-                                                                                    "'description'. When talking about "
-                                                                                    "a dataset, make sure to mention "
-                                                                                    "its id. Here is the user query :"
+                                                                                    "dataset descriptions does not "
+                                                                                    "mention what the datasets holds "
+                                                                                    "exactly but return an estimation "
+                                                                                    "of which ones would be most "
+                                                                                    "useful. The dataset holds 2 "
+                                                                                    "columns 'id' and 'description'. "
+                                                                                    "When talking about a dataset, make"
+                                                                                    " sure to mention its id. Here is "
+                                                                                    "the user query :"
                                                                  + message)
                 self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
                                                                    + result['output'] + " This output is not displayed"
@@ -213,18 +218,19 @@ class OpenAIClient:
                 result = process_dataframe_with_natural_language(target_dataset, arguments_dict['query'])
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
-            
-            elif function_name == 'print_dataset_contents': 
+
+            elif function_name == 'print_dataset_contents':
                 arguments = response.choices[0].message.function_call.arguments
                 arguments_dict = json.loads(arguments)
                 dataset_id = arguments_dict['dataset_id']
                 relevant_datasets = DatasetManager.search_for_relevant_datasets(dataset_id)
-                result = process_dataframe_with_natural_language(relevant_datasets, "This is the Streamlit dataframe format of the dataset"
-                                                                                    "the user requested. The dataframe holds all of the"
-                                                                                    "datasets content, make sure to guide the user through"
-                                                                                    "the dataframe and explain the content of the dataset."
-                                                                                    "Make sure that the dataframe is displayed in a clear and"
-                                                                                    "understandable way."
+                result = process_dataframe_with_natural_language(relevant_datasets,
+                                                                 "This is the Streamlit dataframe format of the dataset"
+                                                                 "the user requested. The dataframe holds all of the"
+                                                                 "datasets content, make sure to guide the user through"
+                                                                 "the dataframe and explain the content of the dataset."
+                                                                 "Make sure that the dataframe is displayed in a clear and"
+                                                                 "understandable way."
                                                                  + message)
                 self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
                                                                    + result['output'] + " This output is not displayed"

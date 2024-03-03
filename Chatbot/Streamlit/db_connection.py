@@ -1,7 +1,7 @@
 import mysql.connector
 
 mydb = mysql.connector.connect(
-    host="db", 
+    host="localhost", 
     port=3306,
     user="user",
     password="user1234",
@@ -24,13 +24,13 @@ mycursor = mydb.cursor()
 
 # mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
 
-# mycursor.execute("SELECT * FROM feedback")
-# results = mycursor.fetchall()
+mycursor.execute("SELECT * FROM feedback")
+results = mycursor.fetchall()
 
-# for row in results:
-#     id = row[0]
-#     input = row[1]
-#     emoji = row[2]
-#     date = row[3].strftime("%d-%m-%Y")
-#     time = row[4]
-#     print(f"({id}, {input}, {emoji}, {date}, {time})")
+for row in results:
+    id = row[0]
+    input = row[1]
+    emoji = row[2]
+    date = row[3].strftime("%d-%m-%Y")
+    time = row[4]
+    print(f"({id}, {input}, {emoji}, {date}, {time})")

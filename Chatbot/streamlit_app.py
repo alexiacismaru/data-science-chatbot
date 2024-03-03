@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime 
-# import Streamlit.db_connection as db_connection
+import Streamlit.db_connection as db_connection
 # import sys
 
 # sys.path.append('./Chatbot')
@@ -20,8 +20,7 @@ api_key = os.getenv('OPENAI_API_KEY')
 chatbot = OpenAIClient(api_key=api_key)
 
 # Initialize the database connection
-connection = st.connection(type='sql', url='mysql://user:user1234@localhost:3306/feedback', name='mysql')
-# df = connection.query('SELECT * FROM feedback')
+connection = db_connection.get_connection()
 
 st.sidebar.title("The Lab - FAN app")
 
@@ -206,6 +205,10 @@ st.markdown(
     }
     .st-emotion-cache-163zt37.ef3psqc7 {
         color: #7547FF;
+    }
+    .stAlert {
+        background-color: aliceblue;
+        border-radius: 0.5rem;
     }
     """,
     unsafe_allow_html=True,

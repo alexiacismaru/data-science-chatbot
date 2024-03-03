@@ -28,7 +28,7 @@ class DatasetManager:
     def get_dataset_descriptions():
         # print("get_dataset_descriptions was called")
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
-        for root, dirs, files in os.walk("../datasets"):
+        for root, dirs, files in os.walk("./datasets"):
             for file in files:
                 if file.endswith('.json'):
                     json_file_path = os.path.join(root, file)
