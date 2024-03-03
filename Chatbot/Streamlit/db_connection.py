@@ -1,10 +1,11 @@
 import mysql.connector
 
 mydb = mysql.connector.connect(
-    host="localhost",
+    host="db", 
+    port=3306,
     user="user",
     password="user1234",
-    database="fan"
+    database="feedback"
 )
 
 # Connect to MySQL database to store feedback

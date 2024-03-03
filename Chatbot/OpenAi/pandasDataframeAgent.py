@@ -3,10 +3,7 @@ from dotenv import load_dotenv
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_openai import ChatOpenAI
 from langchain.agents.agent_types import AgentType 
-from Data.dataset_manager import DatasetManager   
-
-# Load variables from .env file into environment
-load_dotenv()
+from Data.dataset_manager import DatasetManager
 
 
 def process_dataframe_with_natural_language(df: pd.DataFrame, query):
@@ -28,5 +25,11 @@ def process_dataframe_with_natural_language(df: pd.DataFrame, query):
 #     return_intermediate_steps=True,
 #     agent_type=AgentType.OPENAI_FUNCTIONS
 # )
-#
-# agent2.invoke("can you give me the employment rate of antwerp based on it ?") 
+
+
+
+
+
+
+
+

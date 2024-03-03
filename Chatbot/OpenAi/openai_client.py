@@ -4,6 +4,24 @@ from openai import OpenAI
 from Data.dataset_manager import DatasetManager
 from OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language
 
+
+# {
+#     'name': 'get_datasets_by_dataset_id',
+#     'description': 'Retrieve wanted datasets by their ids and get a list of pandas dataframes',
+#     'parameters': {
+#         'type': 'object',
+#         'properties': {
+#             'dataset_ids': {
+#                 'type': 'array',
+#                 'description': 'The ids of the datasets to retrieve',
+#                 'items': {
+#                     'type': 'string'
+#                 }
+#             }
+#         }
+#     }
+# },
+
 class OpenAIClient:
     def __init__(self, api_key):
         self.client = OpenAI(api_key=api_key)
@@ -60,16 +78,14 @@ class OpenAIClient:
             {
                 'name': 'process_dataframe_with_natural_language',
                 'description': 'Process one or more datasets with natural language queries, you need to pass the wanted'
-                               ' dataset ids and the query made in natural language.',
+                               ' datasets id and the query made in natural language. Make sure you pass the dataset id '
+                               'and query otherwise the function will not work.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'dataframe_ids': {
-                            'type': 'array',
-                            'description': 'An array holding the desired dataset ids',
-                            'items': {
-                                'type': 'string'
-                            }
+                        'dataframe_id': {
+                            'type': 'string',
+                            'description': 'The id of the dataset to be used to answer the query in natural language'
                         },
                         'query': {
                             'type': 'string',
@@ -191,10 +207,10 @@ class OpenAIClient:
 
                 # Parsing the JSON string to a Python dictionary
                 arguments_dict = json.loads(arguments)
-                # print("responce: ", response)
+                # print("response: ", response)
                 # print("arguments: ", arguments_dict)
-                target_datasets = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataframe_ids'])
-                result = process_dataframe_with_natural_language(target_datasets, arguments_dict['query'])
+                target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataframe_id'])
+                result = process_dataframe_with_natural_language(target_dataset, arguments_dict['query'])
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
             

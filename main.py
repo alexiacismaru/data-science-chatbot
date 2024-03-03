@@ -77,7 +77,7 @@ def read_datasets(folder_path):
 def get_dataset_descriptions():
     print("get_dataset_descriptions was called")
     datasets_descriptions = []
-    for root, dirs, files in os.walk("./datasets"):
+    for root, dirs, files in os.walk("./Chatbot/datasets"):
         for file in files:
             if file.endswith('.json'):
                 json_file_path = os.path.join(root, file)
@@ -98,7 +98,7 @@ def format_data(data):
 
 
 if __name__ == "__main__":
-    dataset = read_datasets('./datasets')
+    dataset = read_datasets('./Chatbot/datasets')
 
     while True:
 
