@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime 
-import Streamlit.db_connection as db_connection
+# import Streamlit.db_connection as db_connection
 # import sys
 
 # sys.path.append('./Chatbot')
@@ -8,17 +8,20 @@ import Streamlit.db_connection as db_connection
 from dotenv import load_dotenv
 import os
 import matplotlib.pyplot as plt
-
-load_dotenv()
-
 from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
 import re
+
+load_dotenv()
 
 api_key = os.getenv('OPENAI_API_KEY')
 
 # Initialize your chatbot client with the API key from the environment
 chatbot = OpenAIClient(api_key=api_key)
+
+# Initialize the database connection
+connection = st.connection(type='sql', url='mysql://user:user1234@localhost:3306/feedback', name='mysql')
+# df = connection.query('SELECT * FROM feedback')
 
 st.sidebar.title("The Lab - FAN app")
 
@@ -139,8 +142,7 @@ with form_expander:
         emoji_to_store = selected_emoji[0]
         submit_button = st.form_submit_button(label="Submit")
 
-    if submit_button:
-        connection = db_connection.get_connection()
+    if submit_button: 
         cursor = connection.cursor()
 
         # insert the time the feedback was submitted
