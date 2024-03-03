@@ -138,11 +138,11 @@ class OpenAIClient:
         )
         if response.choices[0].message.function_call:
             function_name = response.choices[0].message.function_call.name
-            print("function call: ", function_name)
+            # print("function call: ", function_name)
             if function_name == 'get_dataset_descriptions':
 
                 dataset_catalogue = DatasetManager.get_dataset_descriptions()
-                print(dataset_catalogue)
+                # print(dataset_catalogue)
                 result = process_dataframe_with_natural_language(dataset_catalogue, "This is a dataset catalogue of "
                                                                                     "all the available datasets, it "
                                                                                     "holds 2 columns 'id' and "

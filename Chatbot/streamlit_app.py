@@ -1,9 +1,6 @@
 import streamlit as st
 from datetime import datetime 
-import Streamlit.db_connection as db_connection
-# import sys
-
-# sys.path.append('./Chatbot')
+import Streamlit.db_connection as db_connection 
 
 from dotenv import load_dotenv
 import os

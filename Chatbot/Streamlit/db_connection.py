@@ -1,8 +1,7 @@
 import mysql.connector
 
 mydb = mysql.connector.connect(
-    host="localhost", 
-    port=3306,
+    host="localhost",
     user="user",
     password="user1234",
     database="feedback"
