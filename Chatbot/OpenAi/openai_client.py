@@ -95,18 +95,14 @@ class OpenAIClient:
                 }
             },
             {
-                'name': 'plot_data',
-                'description': 'Plot a dataset or a dataframe with a specific type of plot. You need to pass the dataset id and the plot type.',
+                'name': 'process_datasets',
+                'description': 'Process datasets with natural language queries, you need to pass the wanted datasets id', 
                 'parameters': {
                     'type': 'object',
                     'properties': {
-                        'dataset_id': {
+                        'user_query': {
                             'type': 'string',
-                            'description': 'The id of the dataset you want to plot.'
-                        },
-                        'plot_type': {
-                            'type': 'string',
-                            'description': 'The type of plot you want to use. Supported types are: bar, line, scatter, hist, box, pie.'
+                            'description': 'The user query made that holds the id of the dataset he is to see.'
                         }
                     }
                 }
@@ -204,32 +200,25 @@ class OpenAIClient:
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
 
-            elif function_name == 'plot_data':
-                arguments = response.choices[0].message.function_call.arguments
-                arguments_dict = json.loads(arguments)
-                dataset_id = arguments_dict['dataset_id']
-                plot_type = arguments_dict['plot_type']
-                relevant_datasets = DatasetManager.plot_data(dataset_id, plot_type)
-                result = process_dataframe_with_natural_language(relevant_datasets, "This is the plot of the dataset"
-                                                                                    "the user requested. The plot holds all of the"
-                                                                                    "datasets content, make sure to guide the user through"
-                                                                                    "the plot and explain the content of the dataset."
-                                                                                    "Make sure that the plot is displayed in a clear and"
-                                                                                    "understandable way."
-                                                                 + message)
-                self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
-                                                                   + result['output'] + " This output is not displayed"
-                                                                                        "to the user. Make sure to "
-                                                                                        "explain the results and gide"
-                                                                                        "the user through the process."
-                                      })
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=self.messages
-                )
-                content = response.choices[0].message.content
-                self.messages.append({"role": "assistant", "content": content})
-                return content
+            elif function_name == 'process_datasets':
+                    
+                    # Extracting the 'arguments' field from the FunctionCall object
+                    arguments = response.choices[0].message.function_call.arguments
+    
+                    # Parsing the JSON string to a Python dictionary
+                    arguments_dict = json.loads(arguments)
+                    # print("response: ", response)
+                    # print("arguments: ", arguments_dict)
+                    target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['user_query'])
+                    result = process_dataframe_with_natural_language(target_dataset, "This is the dataset you asked for, "
+                                                                                "look through it and see if it holds "
+                                                                                "what you are looking for. The dataset "
+                                                                                "is in Dutch so make sure to translate "
+                                                                                "the columns and values to English. "
+                                                                                "When talking about a dataset, make sure "
+                                                                                "to mention its id.")
+                    self.messages.append({"role": "assistant", "content": result['output']})
+                    return result['output']
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
             self.messages.append({"role": "system", "content": content})

@@ -80,51 +80,27 @@ class DatasetManager:
         else:
             print(f"Folder '{dataset_folder}' was not found")
         return dataset
-
-    # @staticmethod
-    # def print_dataset_contents(dataset_id):
-    #     dataset = DatasetManager.get_datasets_by_dataset_id([dataset_id])
-    #     if dataset:
-    #         df = dataset[-1]  # Get the last DataFrame from the list
-    #         return df
-    #     else:
-    #         print("Dataset not found.")
-
+    
     @staticmethod
-    def plot_data(dataset_ids, plot_type, x_column, y_column):
-        datasets = DatasetManager.get_datasets_by_dataset_id(dataset_ids)
-        plots = []
-        for df in datasets:
-            if plot_type in ['bar', 'line', 'scatter', 'hist', 'box']:
-                plt.figure()
-                if plot_type == 'bar':
-                    plt.bar(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Bar Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'line':
-                    plt.plot(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Line Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'scatter':
-                    plt.scatter(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Scatter Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'hist':
-                    plt.hist(df[y_column])
-                    plt.xlabel(y_column)
-                    plt.ylabel('Frequency')
-                    plt.title('Histogram of ' + y_column)
-                elif plot_type == 'box':
-                    plt.boxplot(df[y_column])
-                    plt.ylabel(y_column)
-                    plt.title('Box Plot of ' + y_column)
-                plt.show()
-                # elif plot_type == 'pie':
-            #     fig = px.pie(df, values=y_column, names=x_column, title='Pie Chart of ' + y_column + ' vs. ' + x_column)
-        return plots if plots else None
+    def process_datasets(user_query):
+        url = os.getenv("WOBBY_URL_ENDPOINT")
+        querystring = {"limit": "10", "offset": "0", "sortBy": "relevance"}
+        payload = {
+            "query": user_query,
+            "providers": [os.getenv("WOBBY_DATA_PROVIDER")]
+        }
+        headers = {
+            "auth-token": os.getenv("WOBBY_API_AUTH_TOKEN"),
+            "content-type": "application/json"
+        }
+        response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
+        # Parse JSON text into a Python dictionary
+        response_dict = json.loads(response.text)
+        # Extract datasets from the dictionary
+        datasets = response_dict.get('datasets', [])
+        # Convert datasets into a DataFrame
+        df = pd.json_normalize(datasets, max_level=1)
+        return df 
 
     @staticmethod
     def fetch_data_from_external_api():
