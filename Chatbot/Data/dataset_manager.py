@@ -77,47 +77,16 @@ class DatasetManager:
                         parquet_file_path = os.path.join(root, file)
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
-                        dataset = st.dataframe(dataset)
                         break
         else:
             print(f"Folder '{dataset_folder}' was not found")
         return dataset
 
     @staticmethod
-    def plot_data(dataset_ids, plot_type, x_column, y_column):
-        datasets = DatasetManager.get_datasets_by_dataset_id(dataset_ids)
-        plots = []
-        for df in datasets:
-            if plot_type in ['bar', 'line', 'scatter', 'hist', 'box']:
-                plt.figure()
-                if plot_type == 'bar':
-                    plt.bar(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Bar Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'line':
-                    plt.plot(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Line Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'scatter':
-                    plt.scatter(df[x_column], df[y_column])
-                    plt.xlabel(x_column)
-                    plt.ylabel(y_column)
-                    plt.title('Scatter Plot of ' + y_column + ' vs. ' + x_column)
-                elif plot_type == 'hist':
-                    plt.hist(df[y_column])
-                    plt.xlabel(y_column)
-                    plt.ylabel('Frequency')
-                    plt.title('Histogram of ' + y_column)
-                elif plot_type == 'box':
-                    plt.boxplot(df[y_column])
-                    plt.ylabel(y_column)
-                    plt.title('Box Plot of ' + y_column)
-                plt.show()
-                # elif plot_type == 'pie':
-            #     fig = px.pie(df, values=y_column, names=x_column, title='Pie Chart of ' + y_column + ' vs. ' + x_column)
-        return plots if plots else None
+    def transform_dataset_to_pandas_dataframe(dataset_id):
+        dataset = DatasetManager.get_datasets_by_dataset_id(dataset_id)
+        df = pd.DataFrame(dataset)
+        st.dataframe(df)
 
     @staticmethod
     def fetch_data_from_external_api():

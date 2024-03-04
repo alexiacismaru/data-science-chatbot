@@ -51,7 +51,7 @@ class OpenAIClient:
              "content": "Provide functionalities for displaying datasets directly to users, enabling them to view and interact "
                         "with their data in real-time. This includes presenting data tables, summaries, and basic visualizations "
                         "to give users an immediate sense of their dataset's structure and content."
-             }
+            } 
         ]
 
         self.custom_functions = [
@@ -97,24 +97,22 @@ class OpenAIClient:
                         }
                     }
                 }
+            }, 
+            {
+                'name': 'transform_dataset_to_pandas_dataframe',
+                'description': 'Transform a dataset to a pandas dataframe. This can be used when the user wants to see'
+                               'the content of a dataset in a pandas dataframe. The dataset id is needed to transform the'
+                               'dataset to a pandas dataframe.',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'dataset_id': {
+                            'type': 'string',
+                            'description': 'The id of the dataset to be transformed to a pandas dataframe'
+                        }
+                    }
+                }
             }
-            # {
-            #     'name': 'plot_data',
-            #     'description': 'Plot a dataset or a dataframe with a specific type of plot. You need to pass the dataset id and the plot type.',
-            #     'parameters': {
-            #         'type': 'object',
-            #         'properties': {
-            #             'dataset_id': {
-            #                 'type': 'string',
-            #                 'description': 'The id of the dataset you want to plot.'
-            #             },
-            #             'plot_type': {
-            #                 'type': 'string',
-            #                 'description': 'The type of plot you want to use. Supported types are: bar, line, scatter, hist, box, pie.'
-            #             }
-            #         }
-            #     }
-            # }
         ]
 
     def get_gpt3_response(self, message):
@@ -210,32 +208,18 @@ class OpenAIClient:
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
 
-            elif function_name == 'plot_data':
+            elif function_name == 'transform_dataset_to_pandas_dataframe':
+                # Extracting the 'arguments' field from the FunctionCall object
                 arguments = response.choices[0].message.function_call.arguments
+
+                # Parsing the JSON string to a Python dictionary
                 arguments_dict = json.loads(arguments)
                 dataset_id = arguments_dict['dataset_id']
-                plot_type = arguments_dict['plot_type']
-                relevant_datasets = DatasetManager.plot_data(dataset_id, plot_type)
-                result = process_dataframe_with_natural_language(relevant_datasets, "This is the plot of the dataset"
-                                                                                    "the user requested. The plot holds all of the"
-                                                                                    "datasets content, make sure to guide the user through"
-                                                                                    "the plot and explain the content of the dataset."
-                                                                                    "Make sure that the plot is displayed in a clear and"
-                                                                                    "understandable way."
-                                                                 + message)
-                self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
-                                                                   + result['output'] + " This output is not displayed"
-                                                                                        "to the user. Make sure to "
-                                                                                        "explain the results and gide"
-                                                                                        "the user through the process."
-                                      })
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=self.messages
-                )
-                content = response.choices[0].message.content
-                self.messages.append({"role": "assistant", "content": content})
-                return content
+                dataset = DatasetManager.transform_dataset_to_pandas_dataframe(dataset_id)
+                result = process_dataframe_with_natural_language(dataset, "This is the dataset with id " + dataset_id)
+                self.messages.append({"role": "assistant", "content": result['output']})
+                return result['output']
+        
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
             self.messages.append({"role": "system", "content": content})
