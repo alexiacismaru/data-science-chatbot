@@ -81,23 +81,14 @@ class DatasetManager:
             print(f"Folder '{dataset_folder}' was not found")
         return dataset
 
-
-    # @staticmethod
-    # def get_datasets_by_dataset_id(dataset_id):
-    #     dataset_folder = f"./Chatbot/datasets/{dataset_id}"
-    #     if os.path.exists(dataset_folder):
-    #         for root, dirs, files in os.walk(dataset_folder):
-    #             for file in files:
-    #                 if file.endswith('.parquet'):
-    #                     parquet_file_path = os.path.join(root, file) 
-    #                     # Read the parquet file into a pandas DataFrame
-    #                     dataset = pd.read_parquet(parquet_file_path)
-    #                     return dataset 
-    #         print(f"No .parquet files found in '{dataset_folder}'")
-    #         return None 
-    #     else:
-    #         print(f"Folder '{dataset_folder}' was not found")
-    #         return None 
+    @staticmethod
+    def print_dataset_contents(dataset_id):
+        dataset = DatasetManager.get_datasets_by_dataset_id([dataset_id])
+        if dataset:
+            df = dataset[-1]  # Get the last DataFrame from the list
+            return df
+        else:
+            print("Dataset not found.")
 
     @staticmethod
     def plot_data(dataset_ids, plot_type, x_column, y_column):
