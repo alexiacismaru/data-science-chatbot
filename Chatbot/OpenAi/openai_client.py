@@ -95,21 +95,6 @@ class OpenAIClient:
                 }
             },
             {
-                'name': 'print_dataset_contents',
-                'description': 'When the user wants to see the content of a dataset, this method will print the dataframe of the dataset.'
-                               ' The dataset id will be provided by the user in their query, and it will be used to fetch the dataset and print the dataframe.'
-                               'The dataset will be displayed in the st.dataframe() format in a clear and understandable way.',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'dataset_id': {
-                            'type': 'string',
-                            'description': 'The id of the dataset you want to print the dataframe of.'
-                        }
-                    }
-                }
-            },
-            {
                 'name': 'plot_data',
                 'description': 'Plot a dataset or a dataframe with a specific type of plot. You need to pass the dataset id and the plot type.',
                 'parameters': {
@@ -219,32 +204,6 @@ class OpenAIClient:
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
 
-            elif function_name == 'print_dataset_contents':
-                arguments = response.choices[0].message.function_call.arguments
-                arguments_dict = json.loads(arguments)
-                dataset_id = arguments_dict['dataset_id']
-                relevant_datasets = DatasetManager.search_for_relevant_datasets(dataset_id)
-                result = process_dataframe_with_natural_language(relevant_datasets,
-                                                                 "This is the Streamlit dataframe format of the dataset"
-                                                                 "the user requested. The dataframe holds all of the"
-                                                                 "datasets content, make sure to guide the user through"
-                                                                 "the dataframe and explain the content of the dataset."
-                                                                 "Make sure that the dataframe is displayed in a clear and"
-                                                                 "understandable way."
-                                                                 + message)
-                self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
-                                                                   + result['output'] + " This output is not displayed"
-                                                                                        "to the user. Make sure to "
-                                                                                        "explain the results and gide"
-                                                                                        "the user through the process."
-                                      })
-                response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=self.messages
-                )
-                content = response.choices[0].message.content
-                self.messages.append({"role": "assistant", "content": content})
-                return content
             elif function_name == 'plot_data':
                 arguments = response.choices[0].message.function_call.arguments
                 arguments_dict = json.loads(arguments)

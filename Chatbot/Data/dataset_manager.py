@@ -62,24 +62,41 @@ class DatasetManager:
         # Convert datasets into a DataFrame
         df = pd.json_normalize(datasets, max_level=1)
         return df[['dataset.id', 'dataset.shortDescription']].rename(
-            columns={'dataset.id': 'id', 'dataset.shortDescription': 'description'}) 
+            columns={'dataset.id': 'id', 'dataset.shortDescription': 'description'})
 
     @staticmethod
     def get_datasets_by_dataset_id(dataset_id):
+        # print("get_datasets_by_dataset_id was called :", dataset_id)
+        dataset = pd.DataFrame
         dataset_folder = f"./datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:
                     if file.endswith('.parquet'):
-                        parquet_file_path = os.path.join(root, file) 
+                        parquet_file_path = os.path.join(root, file)
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
-                        return dataset 
-            print(f"No .parquet files found in '{dataset_folder}'")
-            return None 
+                        return dataset
         else:
             print(f"Folder '{dataset_folder}' was not found")
-            return None 
+        return dataset
+
+    # @staticmethod
+    # def get_datasets_by_dataset_id(dataset_id):
+    #     dataset_folder = f"./Chatbot/datasets/{dataset_id}"
+    #     if os.path.exists(dataset_folder):
+    #         for root, dirs, files in os.walk(dataset_folder):
+    #             for file in files:
+    #                 if file.endswith('.parquet'):
+    #                     parquet_file_path = os.path.join(root, file) 
+    #                     # Read the parquet file into a pandas DataFrame
+    #                     dataset = pd.read_parquet(parquet_file_path)
+    #                     return dataset 
+    #         print(f"No .parquet files found in '{dataset_folder}'")
+    #         return None 
+    #     else:
+    #         print(f"Folder '{dataset_folder}' was not found")
+    #         return None 
 
     @staticmethod
     def plot_data(dataset_ids, plot_type, x_column, y_column):
