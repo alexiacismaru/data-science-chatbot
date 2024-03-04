@@ -68,7 +68,7 @@ class DatasetManager:
     def get_datasets_by_dataset_id(dataset_id):
         # print("get_datasets_by_dataset_id was called :", dataset_id)
         dataset = pd.DataFrame
-        dataset_folder = f"./datasets/{dataset_id}"
+        dataset_folder = f".,/datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:
@@ -76,12 +76,11 @@ class DatasetManager:
                         parquet_file_path = os.path.join(root, file)
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
-                        return dataset
-            # print(f"No .parquet files found in '{dataset_folder}'")
-            # return None 
+                        break
         else:
             print(f"Folder '{dataset_folder}' was not found")
-            return dataset
+        return dataset
+
 
     # @staticmethod
     # def get_datasets_by_dataset_id(dataset_id):

@@ -10,19 +10,8 @@ Thats all you need to do to get started.
 ## Run Streamlit app
 
 ```
-streamlit run ./Chatbot/Streamlit/streamlit_app.py
-```
-
-## Create Docker container
+streamlit run ./Chatbot/streamlit_app.py
 ``` 
-docker-compose up -d 
-```
-
-#### Remove container
-```
-docker-compose down
-```
-
 
 ## Git Lab stuff
 
