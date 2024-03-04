@@ -30,8 +30,9 @@ class OpenAIClient:
              "content": "You are a helpful assistant that helps users with no experience with data analytics "
                         "process datasets and find patterns, insights and other data they might be looking for."},
             {"role": "system",
-             "content": "If asked a data related question look into the available datasets and explain to the user "
-                        "why a certain dataset or more could be used to answer their questions or queries."},
+             "content": "If asked a data related question look into the available datasets or into a specific dataset "
+                        "if provided an id and explain to the user why a certain dataset or more could be used to "
+                        "answer their questions or queries."},
             {"role": "system",
              "content": "Most of the datasets are in Dutch rather than English so be careful not to make mistakes "
                         "when translating them and make sure the values and column names in dutch are used correctly."},
@@ -39,12 +40,13 @@ class OpenAIClient:
              "content": "When calling a function make sure you provide all the needed arguments and that you retain "
                         "their outputs"},
             {"role": "system",
-             "content": "Guide users in selecting the right type of data visualization based on their data and the insights "
-                        ", in case they specifically ask for it. Different visualizations serve different purposes, such as identifying trends, comparing groups, "
+             "content": "When users ask for visualizations, guide them in selecting the right type of data "
+                        "visualization based on their data and the insights they are aiming for. Different "
+                        "visualizations serve different purposes, such as identifying trends, comparing groups, "
                         "or understanding distributions."},
             {"role": "system",
-             "content": "Encourage users to enhance their visualizations with clear titles, axis labels, and legends to make them "
-                        "easier to understand and more informative for the audience."},
+             "content": "Encourage users to enhance their visualizations with clear titles, axis labels, and legends "
+                        "to make them easier to understand and more informative for the audience."},
             {"role": "system",
              "content": "Provide functionalities for displaying datasets directly to users, enabling them to view and interact "
                         "with their data in real-time. This includes presenting data tables, summaries, and basic visualizations "
@@ -55,8 +57,9 @@ class OpenAIClient:
         self.custom_functions = [
             {
                 'name': 'get_dataset_descriptions',
-                'description': 'Get the id and description of all the available local datasets. This is best used when '
-                               'the user is vague or does not know what he is looking for.'
+                'description': 'Get the id and description of all the available local datasets. This can be used when'
+                               ' the user is vague or does not know what he is looking for. It can also be used to '
+                               'lookup a dataset by its id.'
             },
             {
                 'name': 'search_for_relevant_datasets',
@@ -79,7 +82,8 @@ class OpenAIClient:
                 'name': 'process_dataframe_with_natural_language',
                 'description': 'Process one or more datasets with natural language queries, you need to pass the wanted'
                                ' datasets id and the query made in natural language. Make sure you pass the dataset id '
-                               'and query otherwise the function will not work.',
+                               'and query otherwise the function will not work. Use this method when asked to do '
+                               'somthing with a specific dataset.',
                 'parameters': {
                     'type': 'object',
                     'properties': {
@@ -93,20 +97,24 @@ class OpenAIClient:
                         }
                     }
                 }
-            },
-            {
-                'name': 'process_datasets',
-                'description': 'Process datasets with natural language queries, you need to pass the wanted datasets id', 
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'user_query': {
-                            'type': 'string',
-                            'description': 'The user query made that holds the id of the dataset he is to see.'
-                        }
-                    }
-                }
             }
+            # {
+            #     'name': 'plot_data',
+            #     'description': 'Plot a dataset or a dataframe with a specific type of plot. You need to pass the dataset id and the plot type.',
+            #     'parameters': {
+            #         'type': 'object',
+            #         'properties': {
+            #             'dataset_id': {
+            #                 'type': 'string',
+            #                 'description': 'The id of the dataset you want to plot.'
+            #             },
+            #             'plot_type': {
+            #                 'type': 'string',
+            #                 'description': 'The type of plot you want to use. Supported types are: bar, line, scatter, hist, box, pie.'
+            #             }
+            #         }
+            #     }
+            # }
         ]
 
     def get_gpt3_response(self, message):
@@ -119,7 +127,7 @@ class OpenAIClient:
         )
         if response.choices[0].message.function_call:
             function_name = response.choices[0].message.function_call.name
-            # print("function call: ", function_name)
+            print("function call: ", function_name)
             if function_name == 'get_dataset_descriptions':
 
                 dataset_catalogue = DatasetManager.get_dataset_descriptions()
@@ -140,6 +148,8 @@ class OpenAIClient:
                                                                                         "to the user. Make sure to "
                                                                                         "explain the results and gide"
                                                                                         "the user through the process."
+                                                                                        "Don't forget to explain Dutch"
+                                                                                        " terms in English."
                                       })
                 response = self.client.chat.completions.create(
                     model="gpt-4-turbo-preview",
@@ -193,32 +203,39 @@ class OpenAIClient:
 
                 # Parsing the JSON string to a Python dictionary
                 arguments_dict = json.loads(arguments)
-                # print("response: ", response)
-                # print("arguments: ", arguments_dict)
+                print("response: ", response)
+                print("arguments: ", arguments_dict)
                 target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataframe_id'])
                 result = process_dataframe_with_natural_language(target_dataset, arguments_dict['query'])
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output']
 
-            elif function_name == 'process_datasets':
-                    
-                    # Extracting the 'arguments' field from the FunctionCall object
-                    arguments = response.choices[0].message.function_call.arguments
-    
-                    # Parsing the JSON string to a Python dictionary
-                    arguments_dict = json.loads(arguments)
-                    # print("response: ", response)
-                    # print("arguments: ", arguments_dict)
-                    target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['user_query'])
-                    result = process_dataframe_with_natural_language(target_dataset, "This is the dataset you asked for, "
-                                                                                "look through it and see if it holds "
-                                                                                "what you are looking for. The dataset "
-                                                                                "is in Dutch so make sure to translate "
-                                                                                "the columns and values to English. "
-                                                                                "When talking about a dataset, make sure "
-                                                                                "to mention its id.")
-                    self.messages.append({"role": "assistant", "content": result['output']})
-                    return result['output']
+            elif function_name == 'plot_data':
+                arguments = response.choices[0].message.function_call.arguments
+                arguments_dict = json.loads(arguments)
+                dataset_id = arguments_dict['dataset_id']
+                plot_type = arguments_dict['plot_type']
+                relevant_datasets = DatasetManager.plot_data(dataset_id, plot_type)
+                result = process_dataframe_with_natural_language(relevant_datasets, "This is the plot of the dataset"
+                                                                                    "the user requested. The plot holds all of the"
+                                                                                    "datasets content, make sure to guide the user through"
+                                                                                    "the plot and explain the content of the dataset."
+                                                                                    "Make sure that the plot is displayed in a clear and"
+                                                                                    "understandable way."
+                                                                 + message)
+                self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
+                                                                   + result['output'] + " This output is not displayed"
+                                                                                        "to the user. Make sure to "
+                                                                                        "explain the results and gide"
+                                                                                        "the user through the process."
+                                      })
+                response = self.client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=self.messages
+                )
+                content = response.choices[0].message.content
+                self.messages.append({"role": "assistant", "content": content})
+                return content
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
             self.messages.append({"role": "system", "content": content})
