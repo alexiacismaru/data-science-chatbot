@@ -68,7 +68,7 @@ class DatasetManager:
     def get_datasets_by_dataset_id(dataset_id):
         # print("get_datasets_by_dataset_id was called :", dataset_id)
         dataset = pd.DataFrame
-        dataset_folder = f"./datasets/{dataset_id}"
+        dataset_folder = f"./Chatbot/datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:

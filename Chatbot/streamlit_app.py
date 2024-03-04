@@ -37,6 +37,9 @@ if 'displayed_df' not in st.session_state:
 if st.session_state.displayed_df is not None:
     st.dataframe(st.session_state.displayed_df)
 
+# Regex pattern for UUID
+uuid_pattern = re.compile(r'\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b')
+
 # Accept user input
 if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
@@ -46,21 +49,24 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
 
-    #### DATAFRAMES ####
-    if "dataset_id" in prompt and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
-        # Extract the dataset_id from the prompt
-        dataset_id = re.search(r"\b\d+\b", prompt).group()
+    # Initialize dataset_id as None
+    dataset_id = None
 
+    # Attempt to extract a UUID from the prompt
+    match = uuid_pattern.search(prompt)
+    if match:
+        dataset_id = match.group()
+
+    #### DATAFRAMES ####
+    if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
         # Fetch the dataset contents using the extracted dataset_id
         df = DatasetManager.get_datasets_by_dataset_id(dataset_id)
-        df = st.dataframe(df)
         st.session_state.displayed_df = df  # Store the data frame in the session state
-        response = df
+        response = st.dataframe(df)
         st.session_state.messages.append({"role": "assistant", "content": response})
     else:
         # Get the chatbot response for prompts without a dataset request or without a UUID
         response = chatbot.get_gpt3_response(prompt)
-
 
     # Display assistant response in chat message container and add to chat history
     with st.chat_message("assistant"):
