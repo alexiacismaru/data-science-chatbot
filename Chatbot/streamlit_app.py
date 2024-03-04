@@ -54,11 +54,9 @@ if prompt := st.chat_input("What is up?"):
         # Fetch the dataset contents using the extracted dataset_id
         df = DatasetManager.get_datasets_by_dataset_id(dataset_id) 
         df = st.dataframe(df)
-        prompt = st.dataframe(df)
-        response = chatbot.get_gpt3_response(prompt)
-    else:
-        # Get the chatbot response for prompts without a dataset request or without a UUID
-        response = chatbot.get_gpt3_response(prompt)
+        prompt = df 
+
+    response = chatbot.get_gpt3_response(prompt)
 
     # Display assistant response in chat message container and add to chat history
     with st.chat_message("assistant"):
