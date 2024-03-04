@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
 import re
-import csv
+import Streamlit.db_connection as db_connection
 
 # Load environment variables from .env
 load_dotenv()
@@ -17,6 +17,9 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
 chatbot = OpenAIClient(api_key=api_key)
+
+# Initialize database connection
+connection = db_connection.get_connection()
 
 st.sidebar.title("The Lab - FAN app")
 
@@ -53,8 +56,7 @@ if prompt := st.chat_input("What is up?"):
     if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
         # Fetch the dataset contents using the extracted dataset_id
         df = DatasetManager.get_datasets_by_dataset_id(dataset_id)
-        response = st.dataframe(df)
-        # st.session_state.displayed_df = df  # Store the data frame in the session state 
+        response = st.dataframe(df) 
         st.session_state.messages.append({"role": "assistant", "content": response})
     else:
         # Get the chatbot response for prompts without a dataset request or without a UUID
@@ -71,26 +73,30 @@ emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"
 with st.sidebar:
     form_expander = st.expander("Feedback", expanded=False)
 
-def form_callback(data1, data2, data3, data4):   
-    with open('feedback.csv', 'a+', encoding='utf-8') as f:  #Append & read mode
-        writer = csv.writer(f)
-        if f.tell() == 0:
-            writer.writerow(["Feedback", "Emoji", "Date", "Time"]) 
-        writer.writerow([data1, data2, data3, data4])
-
 # Feedback form
 with form_expander:
-    with st.form(key="feedback_form",clear_on_submit=True):
+    with st.form(key="feedback_form", clear_on_submit=True):
         st.header("Feedback Form")
         feedback_text = st.text_area(label="Please provide your feedback here:")
         selected_emoji = st.selectbox("How was your experience?", emoji_options)
         emoji_to_store = selected_emoji[0]
         submit_button = st.form_submit_button(label="Submit")
-        if submit_button:
-            current_date = datetime.now().strftime("%Y-%m-%d")
-            current_time = datetime.now().strftime("%H:%M:%S")
-            form_callback(feedback_text, emoji_to_store, current_date, current_time)
-            st.success("Feedback submitted!")
+
+    if submit_button: 
+        cursor = connection.cursor()
+
+        # insert the time the feedback was submitted
+        current_date = datetime.now().date()
+        current_time = datetime.now().time()
+
+        # update the table
+        query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
+        values = (feedback_text, emoji_to_store, current_date, current_time)
+        cursor.execute(query, values)
+        connection.commit()
+        cursor.close()
+        connection.close()
+        st.success("Feedback submitted!")
 
 st.markdown(
     """
