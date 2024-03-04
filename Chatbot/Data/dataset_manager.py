@@ -75,6 +75,7 @@ class DatasetManager:
                         parquet_file_path = os.path.join(root, file)
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
+                        dataset = pd.DataFrame(dataset)
                         break
         else:
             print(f"Folder '{dataset_folder}' was not found")
