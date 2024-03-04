@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 logger = logging.getLogger(__name__)
 
 def process_dataframe_with_natural_language(df: pd.DataFrame, query):
-    print(f"Type of df: {type(df)}") 
+    st.write(f"Type of df: {type(df)}")
     try:
         agent = create_pandas_dataframe_agent(
             ChatOpenAI(temperature=0.2, model="gpt-3.5-turbo-0125"),
