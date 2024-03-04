@@ -53,7 +53,7 @@ if prompt := st.chat_input("What is up?"):
     if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
         # Fetch the dataset contents using the extracted dataset_id
         df = DatasetManager.get_datasets_by_dataset_id(dataset_id) 
-        df = st.dataframe(df)
+        # df = st.dataframe(df)
         prompt = df 
         response = chatbot.get_gpt3_response(prompt)
     else:
