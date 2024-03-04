@@ -46,7 +46,21 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
 
-    response = chatbot.get_gpt3_response(prompt)
+    #### DATAFRAMES ####
+    if "dataset_id" in prompt and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
+        # Extract the dataset_id from the prompt
+        dataset_id = re.search(r"\b\d+\b", prompt).group()
+
+        # Fetch the dataset contents using the extracted dataset_id
+        df = DatasetManager.get_datasets_by_dataset_id(dataset_id)
+        df = st.dataframe(df)
+        st.session_state.displayed_df = df  # Store the data frame in the session state
+        response = df
+        st.session_state.messages.append({"role": "assistant", "content": response})
+    else:
+        # Get the chatbot response for prompts without a dataset request or without a UUID
+        response = chatbot.get_gpt3_response(prompt)
+
 
     # Display assistant response in chat message container and add to chat history
     with st.chat_message("assistant"):
