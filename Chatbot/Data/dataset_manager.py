@@ -2,9 +2,7 @@ import os
 import json
 import pandas as pd
 from dotenv import load_dotenv
-import requests
-import matplotlib.pyplot as plt
-import streamlit as st
+import requests 
 
 # Load variables from .env file into environment
 load_dotenv()
@@ -80,13 +78,7 @@ class DatasetManager:
                         break
         else:
             print(f"Folder '{dataset_folder}' was not found")
-        return dataset
-
-    @staticmethod
-    def transform_dataset_to_pandas_dataframe(dataset_id):
-        dataset = DatasetManager.get_datasets_by_dataset_id(dataset_id)
-        df = pd.DataFrame(dataset)
-        st.dataframe(df)
+        return dataset 
 
     @staticmethod
     def fetch_data_from_external_api():

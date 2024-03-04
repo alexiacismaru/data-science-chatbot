@@ -97,21 +97,6 @@ class OpenAIClient:
                         }
                     }
                 }
-            }, 
-            {
-                'name': 'transform_dataset_to_pandas_dataframe',
-                'description': 'Transform a dataset to a pandas dataframe. This can be used when the user wants to see'
-                               'the content of a dataset in a pandas dataframe. The dataset id is needed to transform the'
-                               'dataset to a pandas dataframe.',
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        'dataset_id': {
-                            'type': 'string',
-                            'description': 'The id of the dataset to be transformed to a pandas dataframe'
-                        }
-                    }
-                }
             }
         ]
 
@@ -206,19 +191,7 @@ class OpenAIClient:
                 target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataframe_id'])
                 result = process_dataframe_with_natural_language(target_dataset, arguments_dict['query'])
                 self.messages.append({"role": "assistant", "content": result['output']})
-                return result['output']
-
-            elif function_name == 'transform_dataset_to_pandas_dataframe':
-                # Extracting the 'arguments' field from the FunctionCall object
-                arguments = response.choices[0].message.function_call.arguments
-
-                # Parsing the JSON string to a Python dictionary
-                arguments_dict = json.loads(arguments)
-                dataset_id = arguments_dict['dataset_id']
-                dataset = DatasetManager.transform_dataset_to_pandas_dataframe(dataset_id)
-                result = process_dataframe_with_natural_language(dataset, "This is the dataset with id " + dataset_id)
-                self.messages.append({"role": "assistant", "content": result['output']})
-                return result['output']
+                return result['output'] 
         
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
