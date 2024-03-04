@@ -37,8 +37,8 @@ if 'displayed_df' not in st.session_state:
 if st.session_state.displayed_df is not None:
     st.dataframe(st.session_state.displayed_df)
 
-# Regex pattern for UUID
-uuid_pattern = re.compile(r'\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b')
+# # Regex pattern for UUID
+# uuid_pattern = re.compile(r'\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b')
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
@@ -52,10 +52,10 @@ if prompt := st.chat_input("What is up?"):
     # Initialize dataset_id as None
     dataset_id = None
 
-    # Attempt to extract a UUID from the prompt
-    match = uuid_pattern.search(prompt)
-    if match:
-        dataset_id = match.group()
+    # # Attempt to extract a UUID from the prompt
+    # match = uuid_pattern.search(prompt)
+    # if match:
+    #     dataset_id = match.group()
 
     #### DATAFRAMES ####
     if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
