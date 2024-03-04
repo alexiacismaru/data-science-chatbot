@@ -55,8 +55,10 @@ if prompt := st.chat_input("What is up?"):
         df = DatasetManager.get_datasets_by_dataset_id(dataset_id) 
         df = st.dataframe(df)
         prompt = df 
-
-    response = chatbot.get_gpt3_response(prompt)
+        response = chatbot.get_gpt3_response(prompt)
+    else:
+        # If no DataFrame is involved, proceed as normal
+        response = chatbot.get_gpt3_response(prompt)
 
     # Display assistant response in chat message container and add to chat history
     with st.chat_message("assistant"):
