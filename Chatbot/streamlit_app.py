@@ -60,7 +60,7 @@ if prompt := st.chat_input("What is up?"):
     #### DATAFRAMES ####
     if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
         # Fetch the dataset contents using the extracted dataset_id
-        df = DatasetManager.print_dataset_contents(dataset_id)
+        df = DatasetManager.get_datasets_by_dataset_id(dataset_id)
         st.session_state.displayed_df = df  # Store the data frame in the session state
         response = st.dataframe(df)
         st.session_state.messages.append({"role": "assistant", "content": response})
@@ -68,54 +68,54 @@ if prompt := st.chat_input("What is up?"):
         # Get the chatbot response for prompts without a dataset request or without a UUID
         response = chatbot.get_gpt3_response(prompt)
 
-        #### GRAPHS ####
-    if 'graph' in response or 'plot' in response or 'visual' in response or 'chart' in response:
-        df = DatasetManager.print_dataset_contents(dataset_id)
+    # #### GRAPHS ####
+    # if 'graph' in response or 'plot' in response or 'visual' in response or 'chart' in response:
+    #     df = DatasetManager.print_dataset_contents(dataset_id)
 
-        plot_type = None
-        match = re.search(r'plot\s+(\w+)\s+x=(\w+)\s+y=(\w+)', response)
-        if match:
-            plot_type = match.group(1)
-            x_column = match.group(2)
-            y_column = match.group(3)
+    #     plot_type = None
+    #     match = re.search(r'plot\s+(\w+)\s+x=(\w+)\s+y=(\w+)', response)
+    #     if match:
+    #         plot_type = match.group(1)
+    #         x_column = match.group(2)
+    #         y_column = match.group(3)
 
-        # Generate and display the plot based on the plot type
-        if plot_type == 'line':
-            plt.plot(df)
-            plt.xlabel('X-axis')
-            plt.ylabel('Y-axis')
-            plt.title('Line Plot')
-            st.pyplot()
-        elif plot_type == 'bar':
-            plt.bar(df.line, df['value'])
-            plt.xlabel('X-axis')
-            plt.ylabel('Y-axis')
-            plt.title('Bar Plot')
-            st.pyplot()
-        elif plot_type == 'scatter':
-            plt.scatter(df['x'], df['y'])
-            plt.xlabel('X-axis')
-            plt.ylabel('Y-axis')
-            plt.title('Scatter Plot')
-            st.pyplot()
-        elif plot_type == 'hist':
-            plt.hist(df['value'])
-            plt.xlabel('X-axis')
-            plt.ylabel('Y-axis')
-            plt.title('Histogram')
-            st.pyplot()
-        elif plot_type == 'box':
-            plt.boxplot(df['value'])
-            plt.xlabel('X-axis')
-            plt.ylabel('Y-axis')
-            plt.title('Box Plot')
-            st.pyplot()
-        # elif plot_type == 'pie':
-        #     fig = px.pie(df, values='value', names='category', title='Pie Chart')
-        #     st.plotly_chart(fig)
-    else:
-        # Get the chatbot response for prompts without a dataset request or without a UUID
-        response = chatbot.get_gpt3_response(prompt)
+    #     # Generate and display the plot based on the plot type
+    #     if plot_type == 'line':
+    #         plt.plot(df)
+    #         plt.xlabel('X-axis')
+    #         plt.ylabel('Y-axis')
+    #         plt.title('Line Plot')
+    #         st.pyplot()
+    #     elif plot_type == 'bar':
+    #         plt.bar(df.line, df['value'])
+    #         plt.xlabel('X-axis')
+    #         plt.ylabel('Y-axis')
+    #         plt.title('Bar Plot')
+    #         st.pyplot()
+    #     elif plot_type == 'scatter':
+    #         plt.scatter(df['x'], df['y'])
+    #         plt.xlabel('X-axis')
+    #         plt.ylabel('Y-axis')
+    #         plt.title('Scatter Plot')
+    #         st.pyplot()
+    #     elif plot_type == 'hist':
+    #         plt.hist(df['value'])
+    #         plt.xlabel('X-axis')
+    #         plt.ylabel('Y-axis')
+    #         plt.title('Histogram')
+    #         st.pyplot()
+    #     elif plot_type == 'box':
+    #         plt.boxplot(df['value'])
+    #         plt.xlabel('X-axis')
+    #         plt.ylabel('Y-axis')
+    #         plt.title('Box Plot')
+    #         st.pyplot()
+    #     # elif plot_type == 'pie':
+    #     #     fig = px.pie(df, values='value', names='category', title='Pie Chart')
+    #     #     st.plotly_chart(fig)
+    # else:
+    #     # Get the chatbot response for prompts without a dataset request or without a UUID
+    #     response = chatbot.get_gpt3_response(prompt)
 
         # Display assistant response in chat message container and add to chat history
     with st.chat_message("assistant"):
