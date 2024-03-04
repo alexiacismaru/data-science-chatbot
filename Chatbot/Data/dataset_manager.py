@@ -81,14 +81,14 @@ class DatasetManager:
             print(f"Folder '{dataset_folder}' was not found")
         return dataset
 
-    @staticmethod
-    def print_dataset_contents(dataset_id):
-        dataset = DatasetManager.get_datasets_by_dataset_id([dataset_id])
-        if dataset:
-            df = dataset[-1]  # Get the last DataFrame from the list
-            return df
-        else:
-            print("Dataset not found.")
+    # @staticmethod
+    # def print_dataset_contents(dataset_id):
+    #     dataset = DatasetManager.get_datasets_by_dataset_id([dataset_id])
+    #     if dataset:
+    #         df = dataset[-1]  # Get the last DataFrame from the list
+    #         return df
+    #     else:
+    #         print("Dataset not found.")
 
     @staticmethod
     def plot_data(dataset_ids, plot_type, x_column, y_column):
