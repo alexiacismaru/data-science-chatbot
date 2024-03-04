@@ -77,9 +77,11 @@ class DatasetManager:
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
                         return dataset
+            print(f"No .parquet files found in '{dataset_folder}'")
+            return None 
         else:
             print(f"Folder '{dataset_folder}' was not found")
-        return dataset
+            return dataset
 
     # @staticmethod
     # def get_datasets_by_dataset_id(dataset_id):
