@@ -4,6 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import requests
 import matplotlib.pyplot as plt
+import streamlit as st
 
 # Load variables from .env file into environment
 load_dotenv()
@@ -76,6 +77,7 @@ class DatasetManager:
                         parquet_file_path = os.path.join(root, file)
                         # Read the parquet file into a pandas DataFrame
                         dataset = pd.read_parquet(parquet_file_path)
+                        dataset = st.dataframe(dataset)
                         break
         else:
             print(f"Folder '{dataset_folder}' was not found")
