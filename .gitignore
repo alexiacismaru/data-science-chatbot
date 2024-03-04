@@ -1,5 +1,4 @@
-/.env
-/datasets/
+/.env 
 /Chatbot/datasets/
 /.streamlit
 /.idea/
