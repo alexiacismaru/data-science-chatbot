@@ -7,7 +7,6 @@ from Data.dataset_manager import DatasetManager
 
 
 def process_dataframe_with_natural_language(df: pd.DataFrame, query):
-    df = pd.DataFrame(df)
     agent = create_pandas_dataframe_agent(
         ChatOpenAI(temperature=0.2, model="gpt-3.5-turbo-0125"),
         df,
