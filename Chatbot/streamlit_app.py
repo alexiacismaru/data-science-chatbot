@@ -9,9 +9,11 @@ from Data.dataset_manager import DatasetManager
 import re
 import csv
 
+# Load environment variables from .env
 load_dotenv()
 
-api_key = os.getenv('OPENAI_API_KEY')
+# Get the API key from the environment
+api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
 chatbot = OpenAIClient(api_key=api_key)
