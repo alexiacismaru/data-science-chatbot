@@ -1,8 +1,7 @@
 import streamlit as st
 from datetime import datetime 
 from dotenv import load_dotenv
-import os
-import matplotlib.pyplot as plt
+import os 
 from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
 import re 
@@ -18,10 +17,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
-chatbot = OpenAIClient(api_key=api_key) 
-
-# Load variables from .env file into environment
-load_dotenv()
+chatbot = OpenAIClient(api_key=api_key)  
 
 ### CONNECT TO GOOGLE CLOUD SQL DATABASE ###
 instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
@@ -42,12 +38,13 @@ request = google.auth.transport.requests.Request()
 credentials.refresh(request)
 
 conn = connector.connect(
-        instance_name,  
-        'pymysql',
-        user=user,
-        password=password,
-        db=db
-    )
+    instance_connection_name=instance_name,
+    driver='pymysql',
+    user=user,
+    password=password,
+    db=db,
+    credentials=credentials
+)
 
 def getconn():
     return conn
