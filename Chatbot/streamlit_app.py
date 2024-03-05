@@ -15,10 +15,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
-chatbot = OpenAIClient(api_key=api_key)
-
-# Initialize database connection
-# connection = db_connection.getconn()
+chatbot = OpenAIClient(api_key=api_key) 
 
 from google.cloud.sql.connector import connector
 from dotenv import load_dotenv
