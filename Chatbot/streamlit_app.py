@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
 import re 
-from google.cloud.sql.connector import connector 
+from google.cloud.sql.connector import connector
+import json
+from google.oauth2 import service_account
+import google.auth.transport.requests 
 
 # Load environment variables from .env
 load_dotenv()
@@ -27,6 +30,16 @@ password = os.getenv("DB_PASSWORD")
 db = os.getenv("DB_NAME")    
 secrets = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
+# Assuming you've named your secret "google_service_account"
+service_account_info = json.loads(os.getenv["GOOGLE_APPLICATION_CREDENTIALS"])
+
+credentials = service_account.Credentials.from_service_account_info(
+    service_account_info,
+    scopes=["https://www.googleapis.com/auth/sqlservice.admin"]
+)
+
+request = google.auth.transport.requests.Request()
+credentials.refresh(request)
 
 conn = connector.connect(
         instance_name,  
