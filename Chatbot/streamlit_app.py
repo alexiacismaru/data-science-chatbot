@@ -19,7 +19,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 chatbot = OpenAIClient(api_key=api_key)
 
 # Initialize database connection
-connection = db_connection.get_connection()
+connection = db_connection.getconn()
 
 st.sidebar.title("The Lab - FAN app")
 

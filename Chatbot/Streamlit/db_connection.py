@@ -1,20 +1,29 @@
-import mysql.connector
+from google.cloud.sql.connector import connector
+from dotenv import load_dotenv
+import os 
 
-mydb = mysql.connector.connect(
-    host="db", 
-    port=3306,
-    user="user",
-    password="user1234",
-    database="feedback"
-)
+# Load variables from .env file into environment
+load_dotenv()
 
-# Connect to MySQL database to store feedback
-def get_connection():
-    return mydb
+instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
+user = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+db = os.getenv("DB_NAME")    
+
+conn = connector.connect(
+        instance_name,  
+        'pymysql',
+        user=user,
+        password=password,
+        db=db
+    )
+
+def getconn():
+    return conn
 
 # Create a table to store feedback
-mycursor = mydb.cursor()
-# mycursor.execute("CREATE DATABASE fan")
+mycursor = conn.cursor()
+# mycursor.execute("CREATE DATABASE feedback")
 
 # check to see if the database was created
 # mycursor.execute("SHOW DATABASES")
