@@ -26,7 +26,6 @@ password = os.getenv("DB_PASSWORD")
 db = os.getenv("DB_NAME")    
 secrets = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
-# Assuming you've named your secret "google_service_account"
 service_account_info = json.loads(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 
 credentials = service_account.Credentials.from_service_account_info(
