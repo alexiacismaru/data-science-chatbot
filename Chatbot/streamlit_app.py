@@ -7,8 +7,8 @@ from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
 import re 
 from google.cloud.sql.connector import connector 
-import json
-from google.oauth2 import service_account
+# import json
+# from google.oauth2 import service_account
 
 # Load environment variables from .env
 load_dotenv()
@@ -27,10 +27,10 @@ instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
 user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 db = os.getenv("DB_NAME")    
-secrets = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+# secrets = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
-service_account_info = json.loads(secrets) 
-credentials = service_account.Credentials.from_service_account_info(service_account_info)
+# service_account_info = json.loads(secrets) 
+# credentials = service_account.Credentials.from_service_account_info(service_account_info)
 
 conn = connector.connect(
         instance_name,  
