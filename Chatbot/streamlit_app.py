@@ -38,8 +38,8 @@ request = google.auth.transport.requests.Request()
 credentials.refresh(request)
 
 conn = connector.connect(
-    instance_connection_name=instance_name,
-    driver='pymysql',
+    instance_name,
+    'pymysql',
     user=user,
     password=password,
     db=db,
