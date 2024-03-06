@@ -114,7 +114,7 @@ class OpenAIClient:
             if function_name == 'get_dataset_descriptions':
 
                 dataset_catalogue = DatasetManager.get_dataset_descriptions()
-                # print(dataset_catalogue)
+                print(dataset_catalogue)
                 result = process_dataframe_with_natural_language(dataset_catalogue, "This is a dataset catalogue of "
                                                                                     "all the available datasets, it "
                                                                                     "holds 2 columns 'id' and "
@@ -167,7 +167,8 @@ class OpenAIClient:
                                                                    + result['output'] + " This output is not displayed"
                                                                                         "to the user. Make sure to "
                                                                                         "explain the results and gide"
-                                                                                        "the user through the process."
+                                                                                        "the user through the process. Also when mentioning datasets "
+                                                                                        "make sure to mension their ids."
                                       })
                 response = self.client.chat.completions.create(
                     model="gpt-3.5-turbo",

@@ -1,14 +1,13 @@
 import streamlit as st
 from datetime import datetime 
+
 from dotenv import load_dotenv
-import os 
+import os
+import matplotlib.pyplot as plt
 from OpenAi.openai_client import OpenAIClient
 from Data.dataset_manager import DatasetManager
-import re 
-from google.cloud.sql.connector import connector
-import json
-from google.oauth2 import service_account
-import google.auth.transport.requests 
+import re
+import Streamlit.db_connection as db_connection
 
 # Load environment variables from .env
 load_dotenv()
@@ -17,138 +16,10 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
-chatbot = OpenAIClient(api_key=api_key)  
+chatbot = OpenAIClient(api_key=api_key)
 
-### CONNECT TO GOOGLE CLOUD SQL DATABASE ###
-instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-db = os.getenv("DB_NAME")    
-secrets = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-
-service_account_info = json.loads(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-
-credentials = service_account.Credentials.from_service_account_info(
-    service_account_info,
-    scopes=["https://www.googleapis.com/auth/sqlservice.admin"]
-)
-
-request = google.auth.transport.requests.Request()
-credentials.refresh(request)
-
-conn = connector.connect(
-    instance_name,
-    'pymysql',
-    user=user,
-    password=password,
-    db=db,
-    credentials=credentials
-)
-
-def getconn():
-    return conn
-
-# Create a table to store feedback
-mycursor = conn.cursor()
-# mycursor.execute("CREATE DATABASE feedback")
-
-# check to see if the database was created
-# mycursor.execute("SHOW DATABASES")
-
-# for x in mycursor:
-#   print(x)
-
-# mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
-
-mycursor.execute("SELECT * FROM feedback")
-results = mycursor.fetchall()
-
-for row in results:
-    id = row[0]
-    input = row[1]
-    emoji = row[2]
-    date = row[3].strftime("%d-%m-%Y")
-    time = row[4]
-    print(f"({id}, {input}, {emoji}, {date}, {time})")
-
-### STREANLIT APP ###
-st.sidebar.title("The Lab - FAN app")
-
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello there! How can I assist"}]
-
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Regex pattern for UUID
-uuid_pattern = re.compile(r'\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b')
-
-# Accept user input
-if prompt := st.chat_input("What is up?"):
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # Display user input in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)  # Display the user's input 
-
-    # Initialize dataset_id as None
-    dataset_id = None
-
-    # Attempt to extract a UUID from the prompt
-    match = uuid_pattern.search(prompt)
-    if match:
-        dataset_id = match.group()
-
-    #### DATAFRAMES ####
-    if dataset_id and ("show" in prompt or "print" in prompt or "display" in prompt or "fetch" in prompt):
-        # Fetch the dataset contents using the extracted dataset_id
-        df = DatasetManager.get_datasets_by_dataset_id(dataset_id)
-        response = st.dataframe(df) 
-        st.session_state.messages.append({"role": "assistant", "content": response})
-    else:
-        # Get the chatbot response for prompts without a dataset request or without a UUID
-        response = chatbot.get_gpt3_response(prompt)
-
-    # Display assistant response in chat message container and add to chat history
-    with st.chat_message("assistant"):
-        st.markdown(response)  # Display the chatbot response
-    st.session_state.messages.append({"role": "assistant", "content": response})
-
-### FEEDBACK ###
-emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
-
-with st.sidebar:
-    form_expander = st.expander("Feedback", expanded=False)
-
-connection = getconn()
-# Feedback form
-with form_expander:
-    with st.form(key="feedback_form", clear_on_submit=True):
-        st.header("Feedback Form")
-        feedback_text = st.text_area(label="Please provide your feedback here:")
-        selected_emoji = st.selectbox("How was your experience?", emoji_options)
-        emoji_to_store = selected_emoji[0]
-        submit_button = st.form_submit_button(label="Submit")
-
-    if submit_button: 
-        cursor = connection.cursor()
-
-        # insert the time the feedback was submitted
-        current_date = datetime.now().date()
-        current_time = datetime.now().time()
-
-        # update the table
-        query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
-        values = (feedback_text, emoji_to_store, current_date, current_time)
-        cursor.execute(query, values)
-        connection.commit()
-        cursor.close()
-        connection.close()
-        st.success("Feedback submitted!")
+# Initialize database connection
+connection = db_connection.getconn()
 
 st.markdown(
     """
@@ -206,3 +77,60 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+st.sidebar.title("The Lab - FAN app")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "Hello there! How can I assist"}]
+
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Accept user input
+if prompt := st.chat_input("What is up?"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt}) 
+
+    # Display user input in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)  # Display the user's input 
+        response = chatbot.get_gpt3_response(prompt)
+
+    # Display assistant response in chat message container and add to chat history
+    with st.chat_message("assistant"):
+        st.markdown(response)  # Display the chatbot response
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+### FEEDBACK ###
+emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
+
+with st.sidebar:
+    form_expander = st.expander("Feedback", expanded=False)
+
+# Feedback form
+with form_expander:
+    with st.form(key="feedback_form", clear_on_submit=True):
+        st.header("Feedback Form")
+        feedback_text = st.text_area(label="Please provide your feedback here:")
+        selected_emoji = st.selectbox("How was your experience?", emoji_options)
+        emoji_to_store = selected_emoji[0]
+        submit_button = st.form_submit_button(label="Submit")
+
+    if submit_button: 
+        cursor = connection.cursor()
+
+        # insert the time the feedback was submitted
+        current_date = datetime.now().date()
+        current_time = datetime.now().time()
+
+        # update the table
+        query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
+        values = (feedback_text, emoji_to_store, current_date, current_time)
+        cursor.execute(query, values)
+        connection.commit()
+        cursor.close()
+        connection.close()
+        st.success("Feedback submitted!")
