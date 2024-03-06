@@ -32,7 +32,7 @@ conn = connector.connect(
     )
 
 # # Create a table to store feedback
-# mycursor = conn.cursor()
+mycursor = conn.cursor()
 # mycursor.execute("CREATE DATABASE feedback")
 
 # check to see if the database was created
@@ -43,16 +43,16 @@ conn = connector.connect(
 
 # mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
 
-# mycursor.execute("SELECT * FROM feedback")
-# results = mycursor.fetchall()
+mycursor.execute("SELECT * FROM feedback")
+results = mycursor.fetchall()
 
-# for row in results:
-#     id = row[0]
-#     input = row[1]
-#     emoji = row[2]
-#     date = row[3].strftime("%d-%m-%Y")
-#     time = row[4]
-#     print(f"({id}, {input}, {emoji}, {date}, {time})")
+for row in results:
+    id = row[0]
+    input = row[1]
+    emoji = row[2]
+    date = row[3].strftime("%d-%m-%Y")
+    time = row[4]
+    print(f"({id}, {input}, {emoji}, {date}, {time})")
 
 # conn.close()
 
