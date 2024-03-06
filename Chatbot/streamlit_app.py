@@ -17,22 +17,22 @@ api_key = os.getenv("OPENAI_API_KEY")
 chatbot = OpenAIClient(api_key=api_key)
 
 ### GOOGLE CLOUD SQL CONNECTION ###
-instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-db = os.getenv("DB_NAME")    
+# instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
+# user = os.getenv("DB_USER")
+# password = os.getenv("DB_PASSWORD")
+# db = os.getenv("DB_NAME")    
 
-connector = Connector()
-conn = connector.connect(
-        instance_name,  
-        'pymysql',
-        user=user,
-        password=password,
-        db=db
-    )
+# connector = Connector()
+# conn = connector.connect(
+#         instance_name,  
+#         'pymysql',
+#         user=user,
+#         password=password,
+#         db=db
+#     )
 
 # # Create a table to store feedback
-mycursor = conn.cursor()
+# mycursor = conn.cursor()
 # mycursor.execute("CREATE DATABASE feedback")
 
 # check to see if the database was created
@@ -43,16 +43,16 @@ mycursor = conn.cursor()
 
 # mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
 
-mycursor.execute("SELECT * FROM feedback")
-results = mycursor.fetchall()
+# mycursor.execute("SELECT * FROM feedback")
+# results = mycursor.fetchall()
 
-for row in results:
-    id = row[0]
-    input = row[1]
-    emoji = row[2]
-    date = row[3].strftime("%d-%m-%Y")
-    time = row[4]
-    print(f"({id}, {input}, {emoji}, {date}, {time})")
+# for row in results:
+#     id = row[0]
+#     input = row[1]
+#     emoji = row[2]
+#     date = row[3].strftime("%d-%m-%Y")
+#     time = row[4]
+#     print(f"({id}, {input}, {emoji}, {date}, {time})")
 
 # conn.close()
 
@@ -150,27 +150,27 @@ emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"
 with st.sidebar:
     form_expander = st.expander("Feedback", expanded=False)
 
-# Feedback form
-with form_expander:
-    with st.form(key="feedback_form", clear_on_submit=True):
-        st.header("Feedback Form")
-        feedback_text = st.text_area(label="Please provide your feedback here:")
-        selected_emoji = st.selectbox("How was your experience?", emoji_options)
-        emoji_to_store = selected_emoji[0]
-        submit_button = st.form_submit_button(label="Submit")
+# # Feedback form
+# with form_expander:
+#     with st.form(key="feedback_form", clear_on_submit=True):
+#         st.header("Feedback Form")
+#         feedback_text = st.text_area(label="Please provide your feedback here:")
+#         selected_emoji = st.selectbox("How was your experience?", emoji_options)
+#         emoji_to_store = selected_emoji[0]
+#         submit_button = st.form_submit_button(label="Submit")
 
-    if submit_button: 
-        cursor = conn.cursor()
+#     if submit_button: 
+#         cursor = conn.cursor()
 
-        # insert the time the feedback was submitted
-        current_date = datetime.now().date()
-        current_time = datetime.now().time()
+#         # insert the time the feedback was submitted
+#         current_date = datetime.now().date()
+#         current_time = datetime.now().time()
 
-        # update the table
-        query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
-        values = (feedback_text, emoji_to_store, current_date, current_time)
-        cursor.execute(query, values)
-        conn.commit()
-        cursor.close()
-        conn.close()
-        st.success("Feedback submitted!")
+#         # update the table
+#         query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
+#         values = (feedback_text, emoji_to_store, current_date, current_time)
+#         cursor.execute(query, values)
+#         conn.commit()
+#         cursor.close()
+#         conn.close()
+#         st.success("Feedback submitted!")
