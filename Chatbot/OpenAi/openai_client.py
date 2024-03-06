@@ -97,6 +97,19 @@ class OpenAIClient:
                         }
                     }
                 }
+            },
+            {
+                'name': 'show_dataset_object',
+                'description': 'Return a dataset object to be displayed when the users uses the words "print" or "show" in prompt.',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'dataset_id': {
+                            'type': 'string',
+                            'description': 'The id of the dataset to be shown or displayed'
+                        }
+                    }
+                }
             }
         ]
 
@@ -193,7 +206,12 @@ class OpenAIClient:
                 result = process_dataframe_with_natural_language(target_dataset, arguments_dict['query'])
                 self.messages.append({"role": "assistant", "content": result['output']})
                 return result['output'] 
-        
+            elif function_name == 'show_dataset_object':
+                arguments = response.choices[0].message.function_call.arguments
+                arguments_dict = json.loads(arguments)
+                dataset_id = arguments_dict['dataset_id']
+                self.messages.append({"role": "assistant", "content": "Here is the dataset"})
+                return DatasetManager.get_datasets_by_dataset_id(dataset_id)
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
             self.messages.append({"role": "system", "content": content})

@@ -1,7 +1,5 @@
-import json
 from translate import Translator
 from langdetect import detect
-from textblob import TextBlob
 
 translator = Translator(to_lang='nl')
 

@@ -13,16 +13,6 @@ Thats all you need to do to get started.
 streamlit run ./Chatbot/streamlit_app.py
 ``` 
 
-## Create Docker container
-``` 
-docker-compose up -d 
-```
-
-#### Remove container
-```
-docker-compose down
-```
-
 ## Git Lab stuff
 
 cd existing_repo
