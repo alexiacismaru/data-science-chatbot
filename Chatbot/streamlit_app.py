@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 import os
 from OpenAi.openai_client import OpenAIClient
 import pandas as pd
-from google.cloud.sql.connector import Connector
+from google.cloud.sql.connector import Connector  
+# import matplotlib
+# matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt 
+from plotly.tools import mpl_to_plotly
 
 # Load environment variables from .env
 load_dotenv()
@@ -134,10 +138,14 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
         response = chatbot.get_gpt3_response(prompt)
-    
+
     if isinstance(response, pd.DataFrame):
         st.dataframe(response)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": "Dataframe displayed"})
+    elif isinstance(response, plt.Figure): 
+        fig = mpl_to_plotly(response)
+        st.plotly_chart(fig) 
+        st.session_state.messages.append({"role": "assistant", "content": "Figure displayed"})
     else:
         # Display assistant response in chat message container and add to chat history
         with st.chat_message("assistant"):
@@ -145,10 +153,10 @@ if prompt := st.chat_input("What is up?"):
         st.session_state.messages.append({"role": "assistant", "content": response})
 
 ### FEEDBACK ###
-emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
+# emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
 
-with st.sidebar:
-    form_expander = st.expander("Feedback", expanded=False)
+# with st.sidebar:
+#     form_expander = st.expander("Feedback", expanded=False)
 
 # # Feedback form
 # with form_expander:

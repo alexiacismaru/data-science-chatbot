@@ -4,7 +4,6 @@ from openai import OpenAI
 from Data.dataset_manager import DatasetManager
 from OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language
 
-
 # {
 #     'name': 'get_datasets_by_dataset_id',
 #     'description': 'Retrieve wanted datasets by their ids and get a list of pandas dataframes',
@@ -44,6 +43,12 @@ class OpenAIClient:
                         "visualization based on their data and the insights they are aiming for. Different "
                         "visualizations serve different purposes, such as identifying trends, comparing groups, "
                         "or understanding distributions."},
+            {
+                "role": "system",
+                "content": "When users ask for visualizations make sure that you are creating a chart that is interactive, "
+                            "so that users can explore the data and gain insights from it. Interactive visualizations "
+                            "allow users to filter, zoom, and hover over data points to see more details."
+            },
             {"role": "system",
              "content": "Encourage users to enhance their visualizations with clear titles, axis labels, and legends "
                         "to make them easier to understand and more informative for the audience."},
@@ -51,7 +56,7 @@ class OpenAIClient:
              "content": "Provide functionalities for displaying datasets directly to users, enabling them to view and interact "
                         "with their data in real-time. This includes presenting data tables, summaries, and basic visualizations "
                         "to give users an immediate sense of their dataset's structure and content."
-            } 
+            }
         ]
 
         self.custom_functions = [

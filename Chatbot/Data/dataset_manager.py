@@ -3,6 +3,7 @@ import json
 import pandas as pd
 from dotenv import load_dotenv
 import requests 
+import matplotlib.pyplot as plt 
 
 # Load variables from .env file into environment
 load_dotenv()
@@ -26,7 +27,6 @@ class DatasetManager:
     @staticmethod
     def get_dataset_descriptions():
         # print("get_dataset_descriptions was called")
-        print("current dir:", os.getcwd())
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
         # for root, dirs, files in os.walk("./datasets"):
         for root, dirs, files in os.walk("./Chatbot/datasets"):
