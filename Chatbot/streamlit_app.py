@@ -6,10 +6,11 @@ import os
 from OpenAi.openai_client import OpenAIClient
 import pandas as pd
 from google.cloud.sql.connector import Connector  
-# import matplotlib
-# matplotlib.use('TkAgg')
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt 
 from plotly.tools import mpl_to_plotly
+import plotly.plotly as py
 
 # Load environment variables from .env
 load_dotenv()
