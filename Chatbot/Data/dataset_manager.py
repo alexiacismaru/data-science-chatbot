@@ -2,8 +2,7 @@ import os
 import json
 import pandas as pd
 from dotenv import load_dotenv
-import requests 
-import matplotlib.pyplot as plt 
+import requests  
 
 # Load variables from .env file into environment
 load_dotenv()
