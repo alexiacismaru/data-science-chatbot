@@ -7,7 +7,6 @@ from OpenAi.openai_client import OpenAIClient
 import pandas as pd
 import io
 from google.cloud.sql.connector import Connector  
-import numpy as np
 import matplotlib.pyplot as plt  
 
 # Load environment variables from .env
@@ -44,7 +43,7 @@ mycursor = conn.cursor()
 # # for x in mycursor:
 # #   print(x)
 
-# # mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
+# mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
 
 # mycursor.execute("SELECT * FROM feedback")
 # results = mycursor.fetchall()
