@@ -23,18 +23,14 @@ def init_google_sheets_client(json_credentials):
     return gspread.authorize(credentials)
 
 # Load service account credentials from Streamlit secrets
-json_credentials = st.secrets["gcp_service_account"]
-
-# Initialize the client
-gc = init_google_sheets_client(json_credentials)
+json_credentials = st.secrets["gcp_service_account"] 
 
 # Open the Google Sheet
-spreadsheet_name = 'Feedback' 
-worksheet_name = 'Sheet1' 
-sheet = gc.open(spreadsheet_name).worksheet(worksheet_name)
+spreadsheet_name = 'https://docs.google.com/spreadsheets/d/18_AAt6mSaEaCPraqX8Tm_nDrTbUYAG-zva8XrxXS9rQ/edit?usp=sharing' 
+worksheet_name = 'Sheet1'  
 
-### STYLING ###
-# Update for deployed app
+
+### STYLING ### 
 st.markdown(
     """
     <style>
@@ -141,16 +137,19 @@ with form_expander:
         emoji_to_store = selected_emoji[0]
         submit_button = st.form_submit_button(label="Submit")
 
-    if submit_button: 
-        # insert the time the feedback was submitted
-        current_date = datetime.now().date()
-        current_time = datetime.now().time()
+    if submit_button:
+            # insert the time the feedback was submitted
+            current_date = datetime.now().date()
+            current_time = datetime.now().time()
 
-        # Convert date and time to string format to store in Google Sheets
-        current_date_str = current_date.isoformat() 
-        current_time_str = current_time.strftime('%H:%M:%S')  
+            # Convert date and time to string format to store in Google Sheets
+            current_date_str = current_date.isoformat() 
+            current_time_str = current_time.strftime('%H:%M:%S')
 
-        data = [feedback_text, emoji_to_store, current_date_str, current_time_str]
-
-        # Display a success message
-        st.success("Feedback submited successfully!")
+            client = init_google_sheets_client(json_credentials)
+            sheet = client.open_by_url(spreadsheet_name).worksheet(worksheet_name) 
+            sheet.append_row([feedback_text, emoji_to_store, current_date_str, current_time_str])
+            st.success("Feedback submitted successfully!")
+            all_values = sheet.get_all_values()
+            for row in all_values:
+                print(row)
