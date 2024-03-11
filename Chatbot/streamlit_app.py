@@ -1,12 +1,13 @@
 import streamlit as st
 from datetime import datetime 
 
-from dotenv import load_dotenv
 import os
 from OpenAi.openai_client import OpenAIClient
 import pandas as pd
 import io
 import matplotlib.pyplot as plt
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
@@ -14,7 +15,26 @@ api_key = os.getenv("OPENAI_API_KEY")
 # Initialize your chatbot client with the API key from the environment
 chatbot = OpenAIClient(api_key=api_key)
 
+# Authorize Google Sheets API
+def init_google_sheets_client(json_credentials):
+    scope = ['https://www.googleapis.com/auth/spreadsheets',
+             'https://www.googleapis.com/auth/drive']
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(json_credentials, scope)
+    return gspread.authorize(credentials)
+
+# Load service account credentials from Streamlit secrets
+json_credentials = st.secrets["gcp_service_account"]
+
+# Initialize the client
+gc = init_google_sheets_client(json_credentials)
+
+# Open the Google Sheet
+spreadsheet_name = 'Feedback' 
+worksheet_name = 'Sheet1' 
+sheet = gc.open(spreadsheet_name).worksheet(worksheet_name)
+
 ### STYLING ###
+# Update for deployed app
 st.markdown(
     """
     <style>
@@ -23,7 +43,6 @@ st.markdown(
         margin-top: 120%;
         bottom: 0;
         width: 100%;
-
     }
     .st-emotion-cache-16txtl3.eczjsme4 {
         padding-top: 0;
@@ -94,6 +113,7 @@ if prompt := st.chat_input("What is up?"):
         st.markdown(prompt)  # Display the user's input 
         response = chatbot.get_gpt3_response(prompt)
 
+    # if the assistant response is a dataframe, display it as an interactive table
     if isinstance(response, pd.DataFrame):
         st.dataframe(response) 
         st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
@@ -126,15 +146,9 @@ with form_expander:
         current_date = datetime.now().date()
         current_time = datetime.now().time()
 
-        # update the table
-        st.success("Feedback submitted!")
+        data = [current_date, current_time, feedback_text, emoji_to_store]
+        # Update Google Sheets
+        sheet.append_row(data)
 
-        # Save the feedback data to a CSV file
-        feedback_data = {
-            "Feedback": [feedback_text],
-            "Emoji": [emoji_to_store],
-            "Date": [current_date],
-            "Time": [current_time]
-        }
-        feedback_df = pd.DataFrame(feedback_data)
-        feedback_df.to_csv("feedback.csv", mode="a", header=not os.path.exists("feedback.csv"), index=False)
+        # Display a success message
+        st.success("Google Sheets updated successfully!")
