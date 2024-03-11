@@ -146,9 +146,11 @@ with form_expander:
         current_date = datetime.now().date()
         current_time = datetime.now().time()
 
-        data = [feedback_text, emoji_to_store,current_date, current_time]
-        # Update Google Sheets
-        sheet.append_row(data)
+        # Convert date and time to string format to store in Google Sheets
+        current_date_str = current_date.isoformat() 
+        current_time_str = current_time.strftime('%H:%M:%S')  
+
+        data = [feedback_text, emoji_to_store, current_date_str, current_time_str]
 
         # Display a success message
-        st.success("Google Sheets updated successfully!")
+        st.success("Feedback submited successfully!")
