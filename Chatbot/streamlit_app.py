@@ -6,55 +6,13 @@ import os
 from OpenAi.openai_client import OpenAIClient
 import pandas as pd
 import io
-from google.cloud.sql.connector import Connector  
-import matplotlib.pyplot as plt  
-
-# Load environment variables from .env
-load_dotenv()
+import matplotlib.pyplot as plt
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
 chatbot = OpenAIClient(api_key=api_key)
-
-### GOOGLE CLOUD SQL CONNECTION ###
-instance_name = os.getenv("INSTANCE_CONNECTION_NAME")
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-db = os.getenv("DB_NAME")    
-
-connector = Connector()
-conn = connector.connect(
-        instance_name,  
-        'pymysql',
-        user=user,
-        password=password,
-        db=db
-    )
-
-# # Create a table to store feedback
-mycursor = conn.cursor()
-# # mycursor.execute("CREATE DATABASE feedback")
-
-# # check to see if the database was created
-# # mycursor.execute("SHOW DATABASES")
-
-# # for x in mycursor:
-# #   print(x)
-
-# mycursor.execute("CREATE TABLE feedback (id INT AUTO_INCREMENT PRIMARY KEY, input VARCHAR(255), emoji VARCHAR(255) CHARACTER SET utf8mb4, date DATE, time TIME)")
-
-# mycursor.execute("SELECT * FROM feedback")
-# results = mycursor.fetchall()
-
-# for row in results:
-#     id = row[0]
-#     input = row[1]
-#     emoji = row[2]
-#     date = row[3].strftime("%d-%m-%Y")
-#     time = row[4]
-#     print(f"({id}, {input}, {emoji}, {date}, {time})")
 
 ### STYLING ###
 st.markdown(
@@ -164,17 +122,19 @@ with form_expander:
         submit_button = st.form_submit_button(label="Submit")
 
     if submit_button: 
-        cursor = conn.cursor()
-
         # insert the time the feedback was submitted
         current_date = datetime.now().date()
         current_time = datetime.now().time()
 
         # update the table
-        query = "INSERT INTO feedback (input, emoji, date, time) VALUES (%s, %s, %s, %s)"
-        values = (feedback_text, emoji_to_store, current_date, current_time)
-        cursor.execute(query, values)
-        conn.commit()
-        cursor.close()
-        conn.close()
         st.success("Feedback submitted!")
+
+        # Save the feedback data to a CSV file
+        feedback_data = {
+            "Feedback": [feedback_text],
+            "Emoji": [emoji_to_store],
+            "Date": [current_date],
+            "Time": [current_time]
+        }
+        feedback_df = pd.DataFrame(feedback_data)
+        feedback_df.to_csv("feedback.csv", mode="a", header=not os.path.exists("feedback.csv"), index=False)
