@@ -146,7 +146,7 @@ with form_expander:
         current_date = datetime.now().date()
         current_time = datetime.now().time()
 
-        data = [current_date, current_time, feedback_text, emoji_to_store]
+        data = [feedback_text, emoji_to_store,current_date, current_time]
         # Update Google Sheets
         sheet.append_row(data)
 
