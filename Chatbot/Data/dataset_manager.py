@@ -2,7 +2,8 @@ import os
 import json
 import pandas as pd
 from dotenv import load_dotenv
-import requests  
+import requests
+import matplotlib.pyplot as plt
 
 # Load variables from .env file into environment
 load_dotenv()
@@ -24,11 +25,11 @@ class DatasetManager:
         return datasets
 
     @staticmethod
-    def get_dataset_descriptions():
+    def get_all_datasets():
         # print("get_dataset_descriptions was called")
+        # print("Current working directory:", os.getcwd())
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
-        # for root, dirs, files in os.walk("./datasets"):
-        for root, dirs, files in os.walk("./Chatbot/datasets"):
+        for root, dirs, files in os.walk("./datasets"):
             for file in files:
                 if file.endswith('.json'):
                     json_file_path = os.path.join(root, file)
@@ -42,7 +43,7 @@ class DatasetManager:
         return dataset_catalogue
 
     @staticmethod
-    def search_for_relevant_datasets(user_query):
+    def search_for_dataset_by_topic(user_query):
         url = os.getenv("WOBBY_URL_ENDPOINT")
         querystring = {"limit": "10", "offset": "0", "sortBy": "relevance"}
         payload = {
@@ -59,16 +60,21 @@ class DatasetManager:
         response_dict = json.loads(response.text)
         # Extract datasets from the dictionary
         datasets = response_dict.get('datasets', [])
-        # Convert datasets into a DataFrame
-        df = pd.json_normalize(datasets, max_level=1)
-        return df[['dataset.id', 'dataset.shortDescription']].rename(
-            columns={'dataset.id': 'id', 'dataset.shortDescription': 'description'})
+        if datasets:
+            # Convert datasets into a DataFrame
+            datasets = pd.json_normalize(datasets, max_level=1)
+            return datasets[['dataset.id', 'dataset.name', 'dataset.shortDescription']].rename(
+                columns={'dataset.id': 'id', 'dataset.name': 'name', 'dataset.shortDescription': 'description'})
+        else:
+            return "No dataset about this topic was found."
+
 
     @staticmethod
     def get_datasets_by_dataset_id(dataset_id):
         # print("get_datasets_by_dataset_id was called :", dataset_id)
+        # print("Current working directory:", os.getcwd())
         dataset = pd.DataFrame
-        dataset_folder = f"./Chatbot/datasets/{dataset_id}"
+        dataset_folder = f"./datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:
@@ -79,7 +85,7 @@ class DatasetManager:
                         break
         else:
             print(f"Folder '{dataset_folder}' was not found")
-        return dataset 
+        return dataset
 
     @staticmethod
     def fetch_data_from_external_api():

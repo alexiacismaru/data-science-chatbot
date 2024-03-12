@@ -1,34 +1,38 @@
 import streamlit as st
-from datetime import datetime 
+from datetime import datetime
 
 import os
+import re
 from OpenAi.openai_client import OpenAIClient
 import pandas as pd
 import io
 import matplotlib.pyplot as plt
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize your chatbot client with the API key from the environment
-chatbot = OpenAIClient(api_key=api_key)
+# Initialize chatbot if not already initialized
+if "chatbot" not in st.session_state:
+    st.session_state.chatbot = OpenAIClient(api_key=api_key)
+
 
 # Authorize Google Sheets API
 def init_google_sheets_client(json_credentials):
     scope = ['https://www.googleapis.com/auth/spreadsheets',
              'https://www.googleapis.com/auth/drive']
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict(json_credentials, scope)
+    credentials = Credentials.from_service_account_info(json_credentials, scopes=scope)
     return gspread.authorize(credentials)
 
+
 # Load service account credentials from Streamlit secrets
-json_credentials = st.secrets["gcp_service_account"] 
+json_credentials = st.secrets["gcp_service_account"]
 
 # Open the Google Sheet
-spreadsheet_name = 'https://docs.google.com/spreadsheets/d/18_AAt6mSaEaCPraqX8Tm_nDrTbUYAG-zva8XrxXS9rQ/edit?usp=sharing' 
-worksheet_name = 'Sheet1'  
-
+spreadsheet_name = 'https://docs.google.com/spreadsheets/d/18_AAt6mSaEaCPraqX8Tm_nDrTbUYAG-zva8XrxXS9rQ/edit?usp=sharing'
+worksheet_name = 'Sheet1'
 
 ### STYLING ### 
 st.markdown(
@@ -70,6 +74,9 @@ st.markdown(
         color: white;
         background-color: #7547FF;
     }   
+    .st-emotion-cache-1sva07 {
+        display: none;
+    }
     .st-emotion-cache-k7vsyb.e1nzilvr2 {
         color: #FFFFFF;
     } 
@@ -87,7 +94,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.sidebar.title("The Lab - FAN app") 
+st.sidebar.title("The Lab - FAN app")
+
+st.sidebar.markdown(
+    """
+    Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
+     with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
+     free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
+      on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
+      if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
+      operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
+      working on implementing this feature as soon as possible.
+""")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -102,20 +120,30 @@ buf = io.BytesIO()
 # Accept user input
 if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt}) 
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
     # Display user input in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
-        response = chatbot.get_gpt3_response(prompt)
+        response = st.session_state.chatbot.get_gpt3_response(prompt)
 
     # if the assistant response is a dataframe, display it as an interactive table
     if isinstance(response, pd.DataFrame):
-        st.dataframe(response) 
+        st.dataframe(response)
         st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
-    elif isinstance(response, plt.Figure):   
-        st.pyplot(response)
-        st.session_state.messages.append({"role": "assistant", "content": "Figure displayed"})
+        # Check if the response is a tuple
+    # if isinstance(response, tuple):
+    #     result, df = response
+    #
+    #     pattern = r"python(.*?)"
+    #     match = re.search(pattern, result, re.DOTALL)
+    #     print(result)
+    #     if match:
+    #         code_snippet = match.group(1).strip()
+    #         print("Extracted code snippet:")
+    #         print(code_snippet)
+    #     else:
+    #         print("Code snippet not found in the text.")
     else:
         # Display assistant response in chat message container and add to chat history
         with st.chat_message("assistant"):
@@ -138,18 +166,18 @@ with form_expander:
         submit_button = st.form_submit_button(label="Submit")
 
     if submit_button:
-            # insert the time the feedback was submitted
-            current_date = datetime.now().date()
-            current_time = datetime.now().time()
+        # insert the time the feedback was submitted
+        current_date = datetime.now().date()
+        current_time = datetime.now().time()
 
-            # Convert date and time to string format to store in Google Sheets
-            current_date_str = current_date.isoformat() 
-            current_time_str = current_time.strftime('%H:%M:%S')
+        # Convert date and time to string format to store in Google Sheets
+        current_date_str = current_date.isoformat()
+        current_time_str = current_time.strftime('%H:%M:%S')
 
-            client = init_google_sheets_client(json_credentials)
-            sheet = client.open_by_url(spreadsheet_name).worksheet(worksheet_name) 
-            sheet.append_row([feedback_text, emoji_to_store, current_date_str, current_time_str])
-            st.success("Feedback submitted successfully!")
-            all_values = sheet.get_all_values()
-            for row in all_values:
-                print(row)
+        client = init_google_sheets_client(json_credentials)
+        sheet = client.open_by_url(spreadsheet_name).worksheet(worksheet_name)
+        sheet.append_row([feedback_text, emoji_to_store, current_date_str, current_time_str])
+        st.success("Feedback submitted successfully!")
+        all_values = sheet.get_all_values()
+        for row in all_values:
+            print(row)
