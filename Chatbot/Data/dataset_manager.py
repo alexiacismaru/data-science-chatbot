@@ -29,7 +29,7 @@ class DatasetManager:
         # print("get_dataset_descriptions was called")
         # print("Current working directory:", os.getcwd())
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
-        for root, dirs, files in os.walk("./datasets"):
+        for root, dirs, files in os.walk("./Chatbot/datasets"):
             for file in files:
                 if file.endswith('.json'):
                     json_file_path = os.path.join(root, file)
@@ -74,7 +74,7 @@ class DatasetManager:
         # print("get_datasets_by_dataset_id was called :", dataset_id)
         # print("Current working directory:", os.getcwd())
         dataset = pd.DataFrame
-        dataset_folder = f"./datasets/{dataset_id}"
+        dataset_folder = f"./Chatbot/datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:
