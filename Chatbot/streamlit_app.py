@@ -1,23 +1,13 @@
 import streamlit as st
 from datetime import datetime
-
-import os
-import re
+import os 
 from OpenAi.openai_client import OpenAIClient
-import pandas as pd
-import io
-import matplotlib.pyplot as plt
+import pandas as pd 
 import gspread
 from google.oauth2.service_account import Credentials
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
-
-# Initialize your chatbot client with the API key from the environment
-# Initialize chatbot if not already initialized
-if "chatbot" not in st.session_state:
-    st.session_state.chatbot = OpenAIClient(api_key=api_key)
-
 
 # Authorize Google Sheets API
 def init_google_sheets_client(json_credentials):
@@ -25,7 +15,6 @@ def init_google_sheets_client(json_credentials):
              'https://www.googleapis.com/auth/drive']
     credentials = Credentials.from_service_account_info(json_credentials, scopes=scope)
     return gspread.authorize(credentials)
-
 
 # Load service account credentials from Streamlit secrets
 json_credentials = st.secrets["gcp_service_account"]
@@ -89,34 +78,48 @@ st.markdown(
     .stAlert {
         background-color: aliceblue;
         border-radius: 0.5rem;
-    }
+    } 
+    .element-container.st-emotion-cache-1jd7xru.e1f1d6gn4 {
+        margin-left: 2rem;
+    }   
     """,
     unsafe_allow_html=True,
 )
 
 st.sidebar.title("The Lab - FAN app")
 
-st.sidebar.markdown(
-    """
-    Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
-     with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
-     free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
-      on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
-      if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
-      operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
-      working on implementing this feature as soon as possible.
-""")
+# st.sidebar.markdown(
+#     """
+#     Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
+#     with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
+#     free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
+#     on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
+#     if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
+#     operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
+#     working on implementing this feature as soon as possible.
+#     """
+# )
+
+# Initialize your chatbot client with the API key from the environment
+# Initialize chatbot if not already initialized
+if "chatbot" not in st.session_state:
+    st.session_state.chatbot = OpenAIClient(api_key=api_key)
+
+# st.markdown(''' 
+#     <button onclick="window.scrollTo(0, document.body.scrollHeight);" style="border-radius: 50%; font-size: 1.5rem; border: none; width: 2.5rem; position: fixed; margin-left: 50rem; margin-top: 30rem">
+#         &#x2193; 
+#     </button> 
+# ''', unsafe_allow_html=True)
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello there! How can I assist"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome to FAN Chatbot! Ask me about datasets or anything related to them. I'm here to help you out!"}]
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-buf = io.BytesIO()
 # Accept user input
 if prompt := st.chat_input("What is up?"):
     # Add user message to chat history
@@ -125,30 +128,47 @@ if prompt := st.chat_input("What is up?"):
     # Display user input in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
+    with st.spinner("Thinking..."):
         response = st.session_state.chatbot.get_gpt3_response(prompt)
 
     # if the assistant response is a dataframe, display it as an interactive table
     if isinstance(response, pd.DataFrame):
         st.dataframe(response)
         st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
-        # Check if the response is a tuple
-    # if isinstance(response, tuple):
-    #     result, df = response
-    #
-    #     pattern = r"python(.*?)"
-    #     match = re.search(pattern, result, re.DOTALL)
-    #     print(result)
-    #     if match:
-    #         code_snippet = match.group(1).strip()
-    #         print("Extracted code snippet:")
-    #         print(code_snippet)
-    #     else:
-    #         print("Code snippet not found in the text.")
     else:
         # Display assistant response in chat message container and add to chat history
         with st.chat_message("assistant"):
             st.markdown(response)  # Display the chatbot response
         st.session_state.messages.append({"role": "assistant", "content": response})
+
+### SUGGESTIVE PROMPTS ###
+# Initialize the suggestion chosen state
+if 'suggestion_chosen' not in st.session_state:
+    st.session_state.suggestion_chosen = False 
+
+suggestions = ["What topics are covered?", "Find datasets about education.", "Show me a dataset that relates to the unemployment rate in Antwerpen.", "How can I visualize the evolution of data over the years?"]
+
+if not st.session_state.suggestion_chosen: 
+    for suggestion in suggestions: 
+        if st.button(suggestion):
+            st.session_state.suggestion_chosen = True
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": suggestion})
+            
+            # Display user input in chat message container
+            with st.chat_message("user"):
+                st.markdown(suggestion)  # Display the user's input 
+            with st.spinner("Thinking..."):
+                response = st.session_state.chatbot.get_gpt3_response(suggestion) 
+
+            if isinstance(response, pd.DataFrame):
+                st.dataframe(response)
+                st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
+            else:
+                with st.chat_message("assistant"):
+                    st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.empty() # make the suggestion buttons disappear
 
 ### FEEDBACK ###
 emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
