@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_openai import ChatOpenAI
 from langchain.agents.agent_types import AgentType
-from Data.dataset_manager import DatasetManager
+from Chatbot.Data.dataset_manager import DatasetManager
 import matplotlib.pyplot as plt
 
 

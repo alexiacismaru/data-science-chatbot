@@ -8,28 +8,15 @@ import matplotlib.pyplot as plt
 # Load variables from .env file into environment
 load_dotenv()
 
+
 class DatasetManager:
-    @staticmethod
-    def read_datasets(folder_path):
-        datasets = {}
-        for filename in os.listdir(folder_path):
-            if filename.endswith('.json'):
-                dataset_name = filename.split('.')[0]
-                with open(os.path.join(folder_path, filename), 'r', encoding='utf-8') as json_file:
-                    dataset_info = json.load(json_file)
-                    datasets[dataset_name] = dataset_info
-            elif filename.endswith('.parquet'):
-                dataset_name = filename.split('.')[0]
-                dataset_content = pd.read_parquet(os.path.join(folder_path, filename))
-                datasets[dataset_name] = dataset_content
-        return datasets
 
     @staticmethod
     def get_all_datasets():
         # print("get_dataset_descriptions was called")
         # print("Current working directory:", os.getcwd())
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
-        for root, dirs, files in os.walk("./datasets"):
+        for root, dirs, files in os.walk("./Chatbot/datasets"):
             for file in files:
                 if file.endswith('.json'):
                     json_file_path = os.path.join(root, file)
@@ -68,13 +55,12 @@ class DatasetManager:
         else:
             return "No dataset about this topic was found."
 
-
     @staticmethod
     def get_datasets_by_dataset_id(dataset_id):
         # print("get_datasets_by_dataset_id was called :", dataset_id)
         # print("Current working directory:", os.getcwd())
         dataset = pd.DataFrame
-        dataset_folder = f"./datasets/{dataset_id}"
+        dataset_folder = f"./Chatbot/datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
             for root, dirs, files in os.walk(dataset_folder):
                 for file in files:

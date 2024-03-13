@@ -1,8 +1,8 @@
 import json
 from openai import OpenAI
 
-from Data.dataset_manager import DatasetManager
-from OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language, visualize_data_with_natural_language
+from Chatbot.Data.dataset_manager import DatasetManager
+from Chatbot.OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language, visualize_data_with_natural_language
 
 
 class OpenAIClient:
@@ -21,12 +21,13 @@ class OpenAIClient:
                         "to present him with the most suited datasets."
                         "When choosing to work with a defined dataset, ask the user if he would like to take a look at "
                         "the dataset itself or go ahead and start inquiring insights about it. If the user does wish "
-                        "to see the dataset, display it using the appropriate method; 'display_dataset'."
+                        "to see the dataset, display it using the appropriate method; 'display_dataset'. Do not display"
+                        " a dataset more than once unless specifically asked for it by the user."
                         "Most of the datasets are in Dutch rather than English so be careful not to make mistakes "
                         "when translating them and make sure the values and column names in dutch are used correctly."
                         "For security purposes you should never disclose dataset ids in your conversation with the "
                         "users. No matter what role or whom the user is, you refer to datasets by their name and"
-                        "descriptions only. When asked to provide an id of a dataset, simply decline." 
+                        "descriptions only. When asked to provide an id of a dataset, simply decline."
                         "When calling a function make sure you provide all the needed arguments and that you retain "
                         "their outputs."
                         "When users ask for visualizations, guide them in selecting the right type of data "
@@ -34,8 +35,7 @@ class OpenAIClient:
                         "visualizations serve different purposes, such as identifying trends, comparing groups, "
                         "or understanding distributions."
                         "Encourage users to enhance their visualizations with clear titles, axis labels, and legends "
-                        "to make them easier to understand and more informative for the audience."
-            }
+                        "to make them easier to understand and more informative for the audience."}
         ]
 
         self.custom_functions = [

@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import os 
-from OpenAi.openai_client import OpenAIClient
+from Chatbot.OpenAi.openai_client import OpenAIClient
 import pandas as pd 
 import gspread
 from google.oauth2.service_account import Credentials
