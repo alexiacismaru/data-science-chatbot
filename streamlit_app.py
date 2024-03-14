@@ -5,10 +5,14 @@ from Chatbot.OpenAi.openai_client import OpenAIClient
 import pandas as pd 
 import gspread
 from google.oauth2.service_account import Credentials
+import toml
 import streamlit.components.v1 as components
 
-# Get the API key from the environment
-api_key = os.getenv("OPENAI_API_KEY")
+
+# Get the API key from the secrets.toml file
+
+secrets = toml.load("secrets.toml")
+api_key = secrets["OPENAI_API_KEY"]
 
 # Authorize Google Sheets API
 def init_google_sheets_client(json_credentials):
