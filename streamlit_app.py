@@ -5,6 +5,7 @@ from Chatbot.OpenAi.openai_client import OpenAIClient
 import pandas as pd 
 import gspread
 from google.oauth2.service_account import Credentials
+import streamlit.components.v1 as components
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
@@ -88,22 +89,10 @@ st.markdown(
 
 st.sidebar.title("The Lab - FAN app")
 
-# st.sidebar.markdown(
-#     """
-#     Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
-#     with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
-#     free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
-#     on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
-#     if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
-#     operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
-#     working on implementing this feature as soon as possible.
-#     """
-# )
-
 # Initialize your chatbot client with the API key from the environment
 # Initialize chatbot if not already initialized
 if "chatbot" not in st.session_state:
-    st.session_state.chatbot = OpenAIClient(api_key=api_key)
+    st.session_state.chatbot = OpenAIClient(api_key)
 
 # st.markdown(''' 
 #     <button onclick="window.scrollTo(0, document.body.scrollHeight);" style="border-radius: 50%; font-size: 1.5rem; border: none; width: 2.5rem; position: fixed; margin-left: 50rem; margin-top: 30rem">
@@ -113,7 +102,7 @@ if "chatbot" not in st.session_state:
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome to FAN Chatbot! Ask me about datasets or anything related to them. I'm here to help you out!"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome to FAN Chatbot! Ask me about any topics or anything related to them. I'm here to help you out!"}]
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -201,3 +190,32 @@ with form_expander:
         all_values = sheet.get_all_values()
         for row in all_values:
             print(row)
+
+components.html(""" 
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.getElementById('toggleButton').addEventListener('click', function() {
+                            var text = document.getElementById('text');
+                            if (text.style.display === 'none') {
+                                text.style.display = 'block';
+                            } else {
+                                text.style.display = 'none';
+                            }
+                        });
+                    });
+                </script> 
+                <button id="toggleButton" style="border-radius: 50%; border: none; width: 3rem; height: 3rem; 
+                position: absolute; margin-top: 15rem; font-weight: bold; margin-left: 40rem;">
+                    ❓
+                </button> 
+                <p id="text" style="display: none; font-family: sans-serif; background: #F1EFEF; border-radius: 1rem; 
+                width: 20rem; position: absolute; padding: 1rem;">
+                    Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
+                    with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
+                    free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
+                    on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
+                    if it is available. The chatbot will show you the selected dataset if asked to and is able to perform analytics 
+                    operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
+                    working on implementing this feature as soon as possible.
+                </p>
+            """, height=350, width=1000) 
