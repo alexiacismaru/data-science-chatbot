@@ -4,15 +4,17 @@ import os
 from Chatbot.OpenAi.openai_client import OpenAIClient
 import pandas as pd 
 import gspread
-from google.oauth2.service_account import Credentials
-import toml
+from google.oauth2.service_account import Credentials 
 import streamlit.components.v1 as components
 
+# Get the API key from the environment
+api_key = os.getenv("OPENAI_API_KEY")
 
-# Get the API key from the secrets.toml file
+# Initialize your chatbot client with the API key from the environment
+# Initialize chatbot if not already initialized
+if "chatbot" not in st.session_state:
+    st.session_state.chatbot = OpenAIClient(api_key=api_key)
 
-secrets = toml.load("secrets.toml")
-api_key = secrets["OPENAI_API_KEY"]
 
 # Authorize Google Sheets API
 def init_google_sheets_client(json_credentials):
@@ -20,6 +22,7 @@ def init_google_sheets_client(json_credentials):
              'https://www.googleapis.com/auth/drive']
     credentials = Credentials.from_service_account_info(json_credentials, scopes=scope)
     return gspread.authorize(credentials)
+
 
 # Load service account credentials from Streamlit secrets
 json_credentials = st.secrets["gcp_service_account"]
@@ -83,30 +86,27 @@ st.markdown(
     .stAlert {
         background-color: aliceblue;
         border-radius: 0.5rem;
-    } 
-    .element-container.st-emotion-cache-1jd7xru.e1f1d6gn4 {
-        margin-left: 2rem;
-    }   
+    }
     """,
     unsafe_allow_html=True,
 )
 
 st.sidebar.title("The Lab - FAN app")
 
-# Initialize your chatbot client with the API key from the environment
-# Initialize chatbot if not already initialized
-if "chatbot" not in st.session_state:
-    st.session_state.chatbot = OpenAIClient(api_key)
-
-# st.markdown(''' 
-#     <button onclick="window.scrollTo(0, document.body.scrollHeight);" style="border-radius: 50%; font-size: 1.5rem; border: none; width: 2.5rem; position: fixed; margin-left: 50rem; margin-top: 30rem">
-#         &#x2193; 
-#     </button> 
-# ''', unsafe_allow_html=True)
+# st.sidebar.markdown(
+#     """
+#     Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
+#      with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
+#      free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
+#       on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
+#       if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
+#       operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
+#       working on implementing this feature as soon as possible.
+# """)
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome to FAN Chatbot! Ask me about any topics or anything related to them. I'm here to help you out!"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Hello there! How can I assist"}]
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -121,18 +121,18 @@ if prompt := st.chat_input("What is up?"):
     # Display user input in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)  # Display the user's input 
-    with st.spinner("Thinking..."):
         response = st.session_state.chatbot.get_gpt3_response(prompt)
 
     # if the assistant response is a dataframe, display it as an interactive table
     if isinstance(response, pd.DataFrame):
         st.dataframe(response)
-        st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
+        st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"}) 
     else:
         # Display assistant response in chat message container and add to chat history
         with st.chat_message("assistant"):
             st.markdown(response)  # Display the chatbot response
         st.session_state.messages.append({"role": "assistant", "content": response})
+
 
 ### SUGGESTIVE PROMPTS ###
 # Initialize the suggestion chosen state

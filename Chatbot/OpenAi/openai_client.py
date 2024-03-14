@@ -2,7 +2,7 @@ import json
 from openai import OpenAI
 
 from Chatbot.Data.dataset_manager import DatasetManager
-from Chatbot.OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language, visualize_data_with_natural_language
+from Chatbot.OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language 
 
 
 class OpenAIClient:
@@ -95,27 +95,7 @@ class OpenAIClient:
                         }
                     }
                 }
-            }
-            # ,
-            # {
-            #     'name': 'visualize_data_with_natural_language',
-            #     'description': 'Visualize or plot data from datasets to help users better see trends or other helpful '
-            #                    'evolutions of data like the evolution of data over time.',
-            #     'parameters': {
-            #         'type': 'object',
-            #         'properties': {
-            #             'dataset_id': {
-            #                 'type': 'string',
-            #                 'description': 'The id of the dataset to be used.'
-            #             },
-            #             'user_query': {
-            #                 'type': 'string',
-            #                 'description': 'description of the visualization the user would like to see in natural '
-            #                                'language'
-            #             }
-            #         }
-            #     }
-            # }
+            } 
         ]
 
     def get_gpt3_response(self, message):
@@ -230,19 +210,7 @@ class OpenAIClient:
                 arguments_dict = json.loads(arguments)
                 dataset_id = arguments_dict['dataset_id']
                 self.messages.append({"role": "assistant", "content": "Here is the dataset"})
-                return DatasetManager.get_datasets_by_dataset_id(dataset_id)
-
-            # elif function_name == 'visualize_data_with_natural_language':
-            #     # print("response: ", response)
-            #     arguments = response.choices[0].message.function_call.arguments
-            #     arguments_dict = json.loads(arguments)
-            #     # print("arguments: ", arguments_dict)
-            #     target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataset_id'])
-            #     user_query = arguments_dict['user_query']
-            #     result = visualize_data_with_natural_language(target_dataset, user_query)
-            #     # print(result)
-            #     return result, target_dataset
-
+                return DatasetManager.get_datasets_by_dataset_id(dataset_id) 
 
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
