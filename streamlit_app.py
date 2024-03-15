@@ -8,7 +8,6 @@ import gspread
 from google.oauth2.service_account import Credentials
 from PIL import Image
 
-
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
 
@@ -17,14 +16,12 @@ api_key = os.getenv("OPENAI_API_KEY")
 if "chatbot" not in st.session_state:
     st.session_state.chatbot = OpenAIClient(api_key=api_key)
 
-
 # Authorize Google Sheets API
 def init_google_sheets_client(json_credentials):
     scope = ['https://www.googleapis.com/auth/spreadsheets',
              'https://www.googleapis.com/auth/drive']
     credentials = Credentials.from_service_account_info(json_credentials, scopes=scope)
     return gspread.authorize(credentials)
-
 
 # Load service account credentials from Streamlit secrets
 json_credentials = st.secrets["gcp_service_account"]
@@ -140,18 +137,18 @@ if prompt := st.chat_input("What is up?"):
 ### SUGGESTIVE PROMPTS ###
 # Initialize the suggestion chosen state
 if 'suggestion_chosen' not in st.session_state:
-    st.session_state.suggestion_chosen = False 
+    st.session_state.suggestion_chosen = False  
 
-suggestions = ["What topics are covered?", "Find datasets about education.", "Show me a dataset that relates to the unemployment rate in Antwerpen.", 
+suggestions = ["What topics are covered?", "Find datasets about education.", 
+               "Show me a dataset that relates to the unemployment rate in Antwerpen.", 
                "How can I visualize the evolution of data over the years?"]
 
+# Display the suggestions only if a suggestion has not been chosen yet
 if not st.session_state.suggestion_chosen: 
     for suggestion in suggestions: 
-        if st.button(suggestion):
-            st.session_state.suggestion_chosen = True
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": suggestion})
-            
+        if st.button(suggestion):  
+            st.session_state.messages.append({"role": "user", "content": suggestion}) 
+
             # Display user input in chat message container
             with st.chat_message("user"):
                 st.markdown(suggestion)  # Display the user's input 
@@ -160,13 +157,20 @@ if not st.session_state.suggestion_chosen:
 
             if isinstance(response, pd.DataFrame):
                 st.dataframe(response)
-                st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"})
+                st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"}) 
+            # if the assistant response holds image data, Display the image
+            elif isinstance(response, bytes):
+                display_png_image(response)
+                st.session_state.messages.append({"role": "assistant", "content": "Displayed PNG Image"}) 
             else:
                 with st.chat_message("assistant"):
                     st.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                st.empty() # make the suggestion buttons disappear
 
+            # Clear the buttons after one is clicked
+            st.session_state.suggestion_chosen = True  
+            break
+            
 ### FEEDBACK ###
 emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
 
@@ -193,10 +197,7 @@ with form_expander:
         client = init_google_sheets_client(json_credentials)
         sheet = client.open_by_url(spreadsheet_name).worksheet(worksheet_name)
         sheet.append_row([feedback_text, emoji_to_store, current_date_str, current_time_str])
-        st.success("Feedback submitted successfully!")
-        # all_values = sheet.get_all_values()
-        # for row in all_values:
-        #     print(row)
+        st.success("Feedback submitted successfully!") 
 
 ### ABOUT THE CHATBOT ###  
 with st.sidebar:
