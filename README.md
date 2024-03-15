@@ -10,7 +10,7 @@ Thats all you need to do to get started.
 ## Run Streamlit app
 
 ```
-streamlit run ./Chatbot/streamlit_app.py
+streamlit run ./streamlit_app.py
 ``` 
 
 ## Git Lab stuff
