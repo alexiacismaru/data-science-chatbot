@@ -1,11 +1,13 @@
 import streamlit as st
 from datetime import datetime
-import os 
+import os
 from Chatbot.OpenAi.openai_client import OpenAIClient
-import pandas as pd 
+import pandas as pd
+import io 
 import gspread
-from google.oauth2.service_account import Credentials 
-import streamlit.components.v1 as components
+from google.oauth2.service_account import Credentials
+from PIL import Image
+
 
 # Get the API key from the environment
 api_key = os.getenv("OPENAI_API_KEY")
@@ -31,6 +33,10 @@ json_credentials = st.secrets["gcp_service_account"]
 spreadsheet_name = 'https://docs.google.com/spreadsheets/d/18_AAt6mSaEaCPraqX8Tm_nDrTbUYAG-zva8XrxXS9rQ/edit?usp=sharing'
 worksheet_name = 'Sheet1'
 
+def display_png_image(png_data):
+    image = Image.open(io.BytesIO(png_data))
+    st.image(image, caption='Displayed PNG Image')
+
 ### STYLING ### 
 st.markdown(
     """
@@ -52,7 +58,7 @@ st.markdown(
     .st-emotion-cache-ch5dnh.ef3psqc5, .st-emotion-cache-6q9sum.ef3psqc4 {
         visibility: hidden;
     }
-    .st-emotion-cache-0.1f1d6gn0 {
+    .st-emotion-cache-r421ms.e10yg2by1 {
         border: none; 
     } 
     .st-at.st-au.st-av.st-aw.st-ae.st-ag.st-ah.st-af.st-c2.st-bo.st-c3.st-c4.st-c5.st-c6.st-am.st-an.st-ao.st-ap.st-c7.st-ar.st-as.st-bb.st-ax.st-ay.st-az.st-b0.st-b1 {
@@ -70,6 +76,7 @@ st.markdown(
         border-bottom-right-radius: 1rem;
         color: white;
         background-color: #7547FF;
+        width: 20rem;
     }   
     .st-emotion-cache-1sva07 {
         display: none;
@@ -86,6 +93,9 @@ st.markdown(
     .stAlert {
         background-color: aliceblue;
         border-radius: 0.5rem;
+    }  
+    .st-emotion-cache-1h9usn1.eqpbllx4 {
+        border: none; 
     }
     """,
     unsafe_allow_html=True,
@@ -93,20 +103,9 @@ st.markdown(
 
 st.sidebar.title("The Lab - FAN app")
 
-# st.sidebar.markdown(
-#     """
-#     Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
-#      with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
-#      free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
-#       on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
-#       if it is available. The chatbot will show you the selected dataset if asked to and is able to preform analytics 
-#       operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
-#       working on implementing this feature as soon as possible.
-# """)
-
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello there! How can I assist"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Hello there! Ask me anything about the data that interests you. I'm here to help you!"}]
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -127,6 +126,10 @@ if prompt := st.chat_input("What is up?"):
     if isinstance(response, pd.DataFrame):
         st.dataframe(response)
         st.session_state.messages.append({"role": "assistant", "content": f"```{response.head(5)}```"}) 
+    # if the assistant response holds image data, Display the image
+    elif isinstance(response, bytes):
+        display_png_image(response)
+        st.session_state.messages.append({"role": "assistant", "content": "Displayed PNG Image"})
     else:
         # Display assistant response in chat message container and add to chat history
         with st.chat_message("assistant"):
@@ -139,7 +142,8 @@ if prompt := st.chat_input("What is up?"):
 if 'suggestion_chosen' not in st.session_state:
     st.session_state.suggestion_chosen = False 
 
-suggestions = ["What topics are covered?", "Find datasets about education.", "Show me a dataset that relates to the unemployment rate in Antwerpen.", "How can I visualize the evolution of data over the years?"]
+suggestions = ["What topics are covered?", "Find datasets about education.", "Show me a dataset that relates to the unemployment rate in Antwerpen.", 
+               "How can I visualize the evolution of data over the years?"]
 
 if not st.session_state.suggestion_chosen: 
     for suggestion in suggestions: 
@@ -167,12 +171,11 @@ if not st.session_state.suggestion_chosen:
 emoji_options = ["😀 Happy", "😐 Neutral", "😒 Dissatisfied", "😠 Angry"]
 
 with st.sidebar:
-    form_expander = st.expander("Feedback", expanded=False)
+    form_expander = st.expander("💭 Feedback", expanded=False)
 
 # Feedback form
 with form_expander:
-    with st.form(key="feedback_form", clear_on_submit=True):
-        st.header("Feedback Form")
+    with st.form(key="feedback_form", clear_on_submit=True): 
         feedback_text = st.text_area(label="Please provide your feedback here:")
         selected_emoji = st.selectbox("How was your experience?", emoji_options)
         emoji_to_store = selected_emoji[0]
@@ -191,35 +194,19 @@ with form_expander:
         sheet = client.open_by_url(spreadsheet_name).worksheet(worksheet_name)
         sheet.append_row([feedback_text, emoji_to_store, current_date_str, current_time_str])
         st.success("Feedback submitted successfully!")
-        all_values = sheet.get_all_values()
-        for row in all_values:
-            print(row)
+        # all_values = sheet.get_all_values()
+        # for row in all_values:
+        #     print(row)
 
-components.html(""" 
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        document.getElementById('toggleButton').addEventListener('click', function() {
-                            var text = document.getElementById('text');
-                            if (text.style.display === 'none') {
-                                text.style.display = 'block';
-                            } else {
-                                text.style.display = 'none';
-                            }
-                        });
-                    });
-                </script> 
-                <button id="toggleButton" style="border-radius: 50%; border: none; width: 3rem; height: 3rem; 
-                position: absolute; margin-top: 15rem; font-weight: bold; margin-left: 40rem;">
-                    ❓
-                </button> 
-                <p id="text" style="display: none; font-family: sans-serif; background: #F1EFEF; border-radius: 1rem; 
-                width: 20rem; position: absolute; padding: 1rem;">
-                    Welcome to our proof of concept chatbot. The aim of this project is to make datasets talk by holding a conversation
-                    with a chatbot using natural language processing techniques and getting insights out of data in the process. Feel 
-                    free to mess with the chatbot and experiment with it. As of now, our chatbot is capable of suggesting topics based
-                    on the datasets available to it. It can also find datasets the best fit a topic or subject you are interested in 
-                    if it is available. The chatbot will show you the selected dataset if asked to and is able to perform analytics 
-                    operations on the datasets. As of now the chatbot is still unable to provide graphs or visual aids but we are 
-                    working on implementing this feature as soon as possible.
-                </p>
-            """, height=350, width=1000) 
+### ABOUT THE CHATBOT ###  
+with st.sidebar:
+    about_expander = st.expander("👋 About the chatbot", expanded=False)
+    with about_expander:
+        st.markdown(""" 
+            <div class="text-container">
+                <p style = "font-size: 0.9rem;">Welcome to our chatbot. Its role is to provide you with insights from the datasets available to it and make you understand the information they contain.</p>
+                <p style = "font-size: 0.9rem;">The chatbot is capable of suggesting topics based on these datasets. It can also find datasets the best fit a topic or subject you are interested in and 
+                provide you with insights about the data. You can check out the contents of the datasets and ask it to perform analytics operations on the data.</p>
+                <p style = "font-size: 0.9rem;">Feel free to mess with the chatbot and experiment with it and don't forget to submit your opinion and feedback about it.</p>
+            </div>
+        """, unsafe_allow_html=True) 

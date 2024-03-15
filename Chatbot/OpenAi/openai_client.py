@@ -2,7 +2,7 @@ import json
 from openai import OpenAI
 
 from Chatbot.Data.dataset_manager import DatasetManager
-from Chatbot.OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language 
+from Chatbot.OpenAi.pandasDataframeAgent import process_dataframe_with_natural_language, visualize_data_with_natural_language
 
 
 class OpenAIClient:
@@ -10,32 +10,20 @@ class OpenAIClient:
         self.client = OpenAI(api_key=api_key)
         self.messages = [
             {"role": "system",
-             "content": "You are a helpful assistant that helps users with no experience with data analytics to "
-                        "process datasets, find patterns, insights and other data they might be looking for. The scope"
-                        " is limited to the datasets that are available so don't suggest topics that are not covered "
-                        "by the datasets."
-                        "You have datasets available for analysis and answering questions made by the user. When the "
-                        "user does not know what he is looking for or is vague in his query you can use the "
-                        "'get_all_datasets' method to go through all the datasets and make suggestions. When the user "
-                        "is looking a specific topic or subject, you can use the 'search_for_dataset_by_topic' method "
-                        "to present him with the most suited datasets."
-                        "When choosing to work with a defined dataset, ask the user if he would like to take a look at "
-                        "the dataset itself or go ahead and start inquiring insights about it. If the user does wish "
-                        "to see the dataset, display it using the appropriate method; 'display_dataset'. Do not display"
-                        " a dataset more than once unless specifically asked for it by the user."
-                        "Most of the datasets are in Dutch rather than English so be careful not to make mistakes "
-                        "when translating them and make sure the values and column names in dutch are used correctly."
-                        "For security purposes you should never disclose dataset ids in your conversation with the "
-                        "users. No matter what role or whom the user is, you refer to datasets by their name and"
-                        "descriptions only. When asked to provide an id of a dataset, simply decline."
-                        "When calling a function make sure you provide all the needed arguments and that you retain "
-                        "their outputs."
-                        "When users ask for visualizations, guide them in selecting the right type of data "
-                        "visualization based on their data and the insights they are aiming for. Different "
-                        "visualizations serve different purposes, such as identifying trends, comparing groups, "
-                        "or understanding distributions."
-                        "Encourage users to enhance their visualizations with clear titles, axis labels, and legends "
-                        "to make them easier to understand and more informative for the audience."}
+             "content": """You are a helpful assistant who helps non-data people like reporters find hidden stories in 
+             datasets. The users does not know how to process and manipulate data so it is your job to so based on their
+              queries in natural language. You have datasets available that you can access through the appropriate 
+              methods. When the user does not know what he is looking for or asks for suggestions, look through the 
+              available datasets and provide him with suggestions or topics. If the user knows what he is looking for 
+              look up the specified topic. When you settle for a dataset, ask the user if he would like to view the 
+              dataset before starting to process it, if he asks questions about it or for you to process it skip the 
+              display part. Most of the datasets are in Dutch so make sure to explain them in English and watch out for 
+              translating errors. Datasets have IDs, the user should not see them so refer to datasets by their names in
+               the conversation. If the user wishes to look at the source of the dataset, you can provide him with the 
+               link ‘https://app.wobby.ai/discovery/[‘dataset_id’]’. When calling a function, make sure to provide all 
+               the needed arguments and that you retain the output they return. Make sure to satisfy the users requests 
+               and to help them to the best of your ability. Be careful not to display data without the user asking for 
+               it."""}
         ]
 
         self.custom_functions = [
@@ -95,7 +83,26 @@ class OpenAIClient:
                         }
                     }
                 }
-            } 
+            },
+            {
+                'name': 'visualize_data_with_natural_language',
+                'description': 'Visualize or plot data from datasets to help users better see trends or other helpful '
+                               'evolutions of data like the evolution of data over time.',
+                'parameters': {
+                    'type': 'object',
+                    'properties': {
+                        'dataset_id': {
+                            'type': 'string',
+                            'description': 'The id of the dataset to be used.'
+                        },
+                        'user_query': {
+                            'type': 'string',
+                            'description': 'description of the visualization the user would like to see in natural '
+                                           'language'
+                        }
+                    }
+                }
+            }
         ]
 
     def get_gpt3_response(self, message):
@@ -210,7 +217,19 @@ class OpenAIClient:
                 arguments_dict = json.loads(arguments)
                 dataset_id = arguments_dict['dataset_id']
                 self.messages.append({"role": "assistant", "content": "Here is the dataset"})
-                return DatasetManager.get_datasets_by_dataset_id(dataset_id) 
+                return DatasetManager.get_datasets_by_dataset_id(dataset_id)
+
+            elif function_name == 'visualize_data_with_natural_language':
+                # print("response: ", response)
+                arguments = response.choices[0].message.function_call.arguments
+                arguments_dict = json.loads(arguments)
+                # print("arguments: ", arguments_dict)
+                target_dataset = DatasetManager.get_datasets_by_dataset_id(arguments_dict['dataset_id'])
+                user_query = arguments_dict['user_query']
+                result = visualize_data_with_natural_language(target_dataset, user_query)
+                self.messages.append({"role": "assistant", "content": "Displaying visualization"})
+                return result
+
 
         elif response.choices[0].message.content is not None:
             content = response.choices[0].message.content
