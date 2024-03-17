@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 # Load variables from .env file into environment
 load_dotenv()
 
+
 class DatasetManager:
+
     @staticmethod
     def get_all_datasets():
+        # print("get_dataset_descriptions was called")
+        # print("Current working directory:", os.getcwd())
         dataset_catalogue = pd.DataFrame(columns=['id', 'description'])
         for root, dirs, files in os.walk("./Chatbot/datasets"):
             for file in files:
@@ -53,6 +57,8 @@ class DatasetManager:
 
     @staticmethod
     def get_datasets_by_dataset_id(dataset_id):
+        # print("get_datasets_by_dataset_id was called :", dataset_id)
+        print("Current working directory:", os.getcwd())
         dataset = pd.DataFrame
         dataset_folder = f"./Chatbot/datasets/{dataset_id}"
         if os.path.exists(dataset_folder):
@@ -66,7 +72,3 @@ class DatasetManager:
         else:
             print(f"Folder '{dataset_folder}' was not found")
         return dataset
-
-    @staticmethod
-    def fetch_data_from_external_api():
-        pass

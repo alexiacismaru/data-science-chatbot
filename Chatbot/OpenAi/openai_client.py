@@ -17,10 +17,10 @@ class OpenAIClient:
               available datasets and provide him with suggestions or topics. If the user knows what he is looking for 
               look up the specified topic. When you settle for a dataset, ask the user if he would like to view the 
               dataset before starting to process it, if he asks questions about it or for you to process it skip the 
-              display part. Most of the datasets are in Dutch so make sure to explain them in English and watch out for 
+              display part. Do not display a dataset unless explicitly asked to using show or display. Most of the 
+              datasets are in Dutch so make sure to explain them in English and watch out for 
               translating errors. Datasets have IDs, the user should not see them so refer to datasets by their names in
-               the conversation. If the user wishes to look at the source of the dataset, you can provide him with the 
-               link ‘https://app.wobby.ai/discovery/[‘dataset_id’]’. When calling a function, make sure to provide all 
+               the conversation. When calling a function, make sure to provide all 
                the needed arguments and that you retain the output they return. Make sure to satisfy the users requests 
                and to help them to the best of your ability. Be careful not to display data without the user asking for 
                it."""}
@@ -105,7 +105,7 @@ class OpenAIClient:
             }
         ]
 
-    def get_gpt3_response(self, message):
+    def get_gpt_response(self, message):
         self.messages.append({"role": "user", "content": message})
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -131,7 +131,7 @@ class OpenAIClient:
                                                                                     " sure to extract and mention its "
                                                                                     "name and id. "
                                                                  + message)
-                self.messages.append({"role": "system", "content": "Here is the result of the last dataset search :"
+                self.messages.append({"role": "function", "name": "get_all_datasets", "content": "Here is the result of the last dataset search :"
                                                                    + result['output'] + " This output is not displayed"
                                                                                         "to the user. Retain the ids of"
                                                                                         " the datasets to use them "
@@ -216,7 +216,7 @@ class OpenAIClient:
                 arguments = response.choices[0].message.function_call.arguments
                 arguments_dict = json.loads(arguments)
                 dataset_id = arguments_dict['dataset_id']
-                self.messages.append({"role": "assistant", "content": "Here is the dataset"})
+                self.messages.append({"role": "assistant", "content": "Dataset is displayed"})
                 return DatasetManager.get_datasets_by_dataset_id(dataset_id)
 
             elif function_name == 'visualize_data_with_natural_language':
