@@ -32,7 +32,7 @@ To start the chatbot run:
 ```
 streamlit run ./streamlit_app.py
 ```
-The chatbot will open up on the web browser, where you can start asking questions.
+The chatbot will open on the web browser, where you can ask questions.
 
 ### Example queries
 - What is the evolution of house owners in Antwerp?
@@ -41,3 +41,5 @@ The chatbot will open up on the web browser, where you can start asking question
 
 ## License
 This project was created by Alexia Cismaru, Nikola Velikov, and Firas Nohra.
+
+** For more information check out the WIKI page.
