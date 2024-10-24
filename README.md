@@ -2,6 +2,8 @@
 
 This repository contains the source code for a chatbot designed to assist users with various data science tasks, such as data exploration, visualization, and statistical analysis. The main purpose of it is to minimize the gap between users with no coding experience and data analysis. The chatbot uses Python and Streamlit for the user interface. The project was created for the Wobby website and uses datasets found on it to answer questions regarding the population of Belgium. 
 
+**Medium article: https://medium.com/@alexia.csmr/analytic-chatbot-f55a9acbe3d8**
+
 ## Features
 
 - **Natural Language Understanding**: The chatbot can interpret user queries in any language by using GPT-3.5. It is designed to explain in simple English various data analysis steps.
